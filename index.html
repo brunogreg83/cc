@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Conta Corrente | AB Chemicals × Dr. Portugal</title>
+<style>
+:root{--bg:#f4f7fb;--card:#fff;--ink:#142235;--muted:#667085;--line:#e5eaf1;--primary:#123c5a;--green:#15803d;--red:#b42318}
+*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:var(--bg);color:var(--ink)}
+header{background:linear-gradient(135deg,#0b1d2d,#155274);color:#fff;padding:24px 18px}
+header h1{margin:0 0 6px;font-size:24px}header p{margin:0;opacity:.85}
+main{max-width:1100px;margin:auto;padding:18px}
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:18px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;box-shadow:0 4px 14px #1020300b}
+.label{font-size:13px;color:var(--muted);margin-bottom:8px}.value{font-size:25px;font-weight:700}
+.green{color:var(--green)}.red{color:var(--red)}
+.grid{display:grid;grid-template-columns:340px 1fr;gap:18px}
+.panel{background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px}
+h2{font-size:18px;margin:0 0 16px}label{display:block;font-size:13px;font-weight:700;margin:12px 0 6px}
+input,select,textarea,button{width:100%;padding:11px;border:1px solid #d5dce5;border-radius:9px;font:inherit}
+textarea{min-height:75px;resize:vertical}button{border:0;background:var(--primary);color:#fff;font-weight:700;cursor:pointer;margin-top:15px}
+button.secondary{background:#eef3f7;color:var(--ink)}button.danger{background:#fff0ee;color:var(--red)}
+table{width:100%;border-collapse:collapse;font-size:14px}th,td{padding:11px 8px;border-bottom:1px solid var(--line);text-align:left}th{font-size:12px;color:var(--muted)}
+.status{display:inline-block;padding:4px 8px;border-radius:20px;background:#edf7ef;color:var(--green);font-size:11px}
+.empty{text-align:center;color:var(--muted);padding:30px}
+.notice{background:#f8fafc;border:1px solid var(--line);padding:12px;border-radius:9px;font-size:12px;color:var(--muted);margin-top:12px}
+@media(max-width:800px){.cards,.grid{grid-template-columns:1fr}.cards .card:first-child{grid-column:auto}table{min-width:720px}.tablewrap{overflow:auto}}
+</style>
+</head>
+<body>
+<header>
+<h1>Conta Corrente</h1>
+<p>AB Chemicals × Dr. Portugal</p>
+</header>
+<main>
+<section class="cards">
+<div class="card"><div class="label">Saldo da AB Chemicals</div><div id="saldoAB" class="value">R$ 0,00</div></div>
+<div class="card"><div class="label">Saldo do Dr. Portugal</div><div id="saldoDP" class="value">R$ 0,00</div></div>
+<div class="card"><div class="label">Lançamentos</div><div id="qtd" class="value">0</div></div>
+</section>
+
+<div class="grid">
+<section class="panel">
+<h2>Novo lançamento</h2>
+<label>Data</label><input id="data" type="date">
+<label>Quem está lançando?</label>
+<select id="parte"><option>AB Chemicals</option><option>Dr. Portugal</option></select>
+<label>Tipo</label>
+<select id="tipo"><option value="credito">Crédito</option><option value="debito">Débito</option></select>
+<label>Valor (R$)</label><input id="valor" type="number" step="0.01" min="0.01" placeholder="0,00">
+<label>Descrição</label><input id="descricao" placeholder="Ex.: Compra, pagamento, bonificação...">
+<label>Documento / referência</label><input id="documento" placeholder="NF, recibo, referência...">
+<label>Observação</label><textarea id="obs"></textarea>
+<button onclick="lancar()">Registrar lançamento</button>
+<div class="notice">Cada lançamento é registrado uma única vez e o reflexo contrário é calculado automaticamente para a outra parte.</div>
+</section>
+
+<section class="panel">
+<h2>Extrato da conta corrente</h2>
+<div class="tablewrap">
+<table><thead><tr><th>Data</th><th>Parte</th><th>Descrição</th><th>Valor</th><th>Reflexo</th><th>Documento</th></tr></thead>
+<tbody id="extrato"></tbody></table>
+</div>
+<button class="secondary" onclick="limpar()">Limpar dados locais</button>
+</section>
+</div>
+</main>
+
+<script>
+const KEY="ab_dp_conta_corrente_v1";
+const $=id=>document.getElementById(id);
+$("data").value=new Date().toISOString().slice(0,10);
+
+function getLanc(){return JSON.parse(localStorage.getItem(KEY)||"[]")}
+function save(a){localStorage.setItem(KEY,JSON.stringify(a))}
+
+function dinheiro(n){return Number(n).toLocaleString("pt-BR",{style:"currency",currency:"BRL"})}
+
+function lancar(){
+ const valor=Number($("valor").value);
+ if(!valor||valor<=0||!$("descricao").value.trim()){alert("Informe valor e descrição.");return}
+ const a=getLanc();
+ a.push({
+  id:Date.now(),data:$("data").value,parte:$("parte").value,tipo:$("tipo").value,
+  valor,descricao:$("descricao").value.trim(),documento:$("documento").value.trim(),obs:$("obs").value.trim()
+ });
+ save(a); render();
+ $("valor").value="";$("descricao").value="";$("documento").value="";$("obs").value="";
+}
+function render(){
+ const a=getLanc();
+ let ab=0,dp=0;
+ a.forEach(x=>{
+  const sinal=x.tipo==="credito"?1:-1;
+  if(x.parte==="AB Chemicals")ab+=sinal*x.valor; else dp+=sinal*x.valor;
+ });
+ $("saldoAB").textContent=dinheiro(ab);
+ $("saldoDP").textContent=dinheiro(dp);
+ $("saldoAB").className="value "+(ab>=0?"green":"red");
+ $("saldoDP").className="value "+(dp>=0?"green":"red");
+ $("qtd").textContent=a.length;
+ $("extrato").innerHTML=a.length?a.slice().reverse().map(x=>{
+  const sinal=x.tipo==="credito"?1:-1;
+  const reflexo=x.parte==="AB Chemicals"?"Dr. Portugal":"AB Chemicals";
+  return `<tr><td>${new Date(x.data+"T12:00:00").toLocaleDateString("pt-BR")}</td>
+  <td>${x.parte}</td><td>${x.descricao}</td>
+  <td class="${sinal>0?"green":"red"}">${sinal>0?"+":"-"} ${dinheiro(x.valor)}</td>
+  <td>${reflexo}: ${sinal>0?"-":"+"} ${dinheiro(x.valor)}</td><td>${x.documento||"—"}</td></tr>`
+ }).join(""):'<tr><td colspan="6" class="empty">Nenhum lançamento realizado.</td></tr>';
+}
+function limpar(){
+ if(confirm("Apagar os lançamentos deste navegador? Esta ação não pode ser desfeita.")){localStorage.removeItem(KEY);render()}
+}
+render();
+</script>
+</body>
+</html>
