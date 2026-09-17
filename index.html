@@ -25,7 +25,10 @@ table{width:100%;border-collapse:collapse;font-size:14px}th,td{padding:11px 8px;
 .status{display:inline-block;padding:4px 8px;border-radius:20px;background:#edf7ef;color:var(--green);font-size:11px}
 .empty{text-align:center;color:var(--muted);padding:30px}
 .notice{background:#f8fafc;border:1px solid var(--line);padding:12px;border-radius:9px;font-size:12px;color:var(--muted);margin-top:12px}
- .settlement{width:100%;margin:clamp(10px,2vw,18px) 0 0;background:#f8fafc;border:1px solid var(--line);border-radius:clamp(10px,1.5vw,14px);padding:clamp(12px,2vw,20px);min-width:0}
+ .bottom-controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:clamp(8px,1.5vw,14px);margin-top:clamp(10px,2vw,18px)}
+.bottom-controls .card{width:100%;min-width:0}
+.bottom-controls label{margin-top:0}
+.settlement{width:100%;margin:clamp(10px,2vw,18px) 0 0;background:#f8fafc;border:1px solid var(--line);border-radius:clamp(10px,1.5vw,14px);padding:clamp(12px,2vw,20px);min-width:0}
 .settlement-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:clamp(8px,1.5vw,14px)}
 .settlement-box{background:#fff;border:1px solid var(--line);border-radius:12px;padding:15px}
 .settlement-title{font-size:13px;color:var(--muted);margin-bottom:7px}.settlement-value{font-size:24px;font-weight:700}
@@ -33,7 +36,7 @@ table{width:100%;border-collapse:collapse;font-size:14px}th,td{padding:11px 8px;
 .pill{display:inline-block;padding:5px 9px;border-radius:20px;background:#eaf7ee;color:var(--green);font-size:11px;font-weight:700}
 @media(max-width:900px){
   html,body{width:100%;max-width:100%;overflow-x:hidden}
-  .cards,.settlement-grid{grid-template-columns:minmax(0,1fr);width:100%}
+  .cards,.settlement-grid,.bottom-controls{grid-template-columns:minmax(0,1fr);width:100%}
   .cards .card:first-child{grid-column:auto}
   .monthbar{flex-direction:column;align-items:stretch;width:100%}
   main{width:100%;max-width:100%;overflow:hidden}
@@ -60,21 +63,18 @@ table{width:100%;border-collapse:collapse;font-size:14px}th,td{padding:11px 8px;
 <section class="cards">
 <div class="card"><div class="label">Saldo devedor a receber — AB Chemicals</div><div id="saldoAB" class="value green">R$ 0,00</div></div>
 <div class="card"><div class="label">Contrapartida — Dr. Portugal</div><div id="saldoDP" class="value red">R$ 0,00</div></div>
-<div class="card"><div class="label">Lançamentos do mês</div><div id="qtd" class="value">0</div></div>
+
 </section>
 <section class="settlement">
   <div class="monthbar">
-    <div>
-      <label>Mês da conta corrente</label>
-      <input id="mes" type="month">
-    </div>
+    
     <div>
       <button onclick="registrarPagamento()">Registrar pagamento e zerar o mês</button>
     </div>
   </div>
   <div class="settlement-grid">
     <div class="settlement-box">
-      <div class="settlement-title">Saldo a pagar à AB Chemicals</div>
+      <div id="saldoPagarTitulo" class="settlement-title">Saldo a pagar</div>
       <div id="saldoPagar" class="settlement-value green">R$ 0,00</div>
     </div>
     <div class="settlement-box">
@@ -106,6 +106,19 @@ table{width:100%;border-collapse:collapse;font-size:14px}th,td{padding:11px 8px;
 </div>
 
 </section>
+<section class="bottom-controls">
+  <div class="card">
+    <div class="label">Lançamentos do mês</div>
+    <div id="qtd" class="value">0</div>
+  </div>
+  <div class="card">
+    <div>
+      <label>Mês da conta corrente</label>
+      <input id="mes" type="month">
+    </div>
+  </div>
+</section>
+
 
 
 
@@ -163,17 +176,23 @@ function registrarPagamento(){
  const mes=mesAtual();
  const saldo=saldoDoMes(mes);
  if(Math.abs(saldo)<0.005){alert("O mês já está zerado.");return}
- if(saldo<0){alert("O saldo deste mês não indica valor a receber pela AB Chemicals. Verifique os lançamentos.");return}
- const valor=Number(saldo.toFixed(2));
+
+ const valor=Math.abs(Number(saldo.toFixed(2)));
+ const recebedor=saldo>0 ? "AB Chemicals" : "Dr. Portugal";
+ const pagador=saldo>0 ? "Dr. Portugal" : "AB Chemicals";
  const ultimoDia=new Date(Number(mes.slice(0,4)),Number(mes.slice(5,7)),0).toISOString().slice(0,10);
+
+ if(!confirm(`${pagador} deverá pagar ${dinheiro(valor)} para ${recebedor}. Confirmar fechamento do mês?`)) return;
+
  const a=getLanc();
  a.push({
-   id:Date.now(),data:ultimoDia,parte:"Dr. Portugal",tipo:"pagamento",
-   valor,descricao:"Pagamento de fechamento do mês",documento:"FECHAMENTO",
-   obs:"Pagamento registrado para zerar a conta corrente do mês."
+   id:Date.now(),data:ultimoDia,parte:pagador,tipo:"pagamento",
+   valor,descricao:`Pagamento de fechamento do mês — ${recebedor}`,
+   documento:"FECHAMENTO",
+   obs:`Pagamento de ${pagador} para ${recebedor}, encerrando o saldo positivo do mês.`
  });
  save(a);render();
- alert("Pagamento registrado. O saldo do mês foi zerado e o histórico foi mantido.");
+ alert(`Pagamento registrado: ${pagador} → ${recebedor}. O saldo do mês foi zerado.`);
 }
 
 function render(){
@@ -213,7 +232,11 @@ function render(){
  $("saldoAB").className="value "+(saldoAB>=0?"green":"red");
  $("saldoDP").className="value "+(saldoDP>=0?"green":"red");
  $("qtd").textContent=qtd;
- $("saldoPagar").textContent=dinheiro(Math.max(0,saldoAB));
+ const saldoPositivo=Math.max(0, Math.abs(saldoAB));
+const recebedor=saldoAB>0.005 ? "AB Chemicals" : (saldoAB< -0.005 ? "Dr. Portugal" : "Nenhuma das partes");
+$("saldoPagarTitulo").textContent =
+  Math.abs(saldoAB)>0.005 ? `Saldo a receber — ${recebedor}` : "Saldo a receber";
+$("saldoPagar").textContent=dinheiro(saldoPositivo);
 
  const fechado=a.some(x=>x.data.slice(0,7)===mes && x.tipo==="pagamento");
  $("situacao").innerHTML=fechado?'<span class="pill">ZERADO / FECHADO</span>':'<span class="pill">EM ABERTO</span>';
