@@ -5,66 +5,70 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Conta Corrente | AB Chemicals × Dr. Portugal</title>
 <style>
-:root{--bg:#f4f7fb;--card:#fff;--ink:#142235;--muted:#667085;--line:#e5eaf1;--primary:#123c5a;--green:#15803d;--red:#b42318}
-*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:var(--bg);color:var(--ink)}
-header{background:linear-gradient(135deg,#0b1d2d,#155274);color:#fff;padding:24px 18px}
-header h1{margin:0 0 6px;font-size:24px}header p{margin:0;opacity:.85}
-main{width:min(100%,1100px);margin:auto;padding:clamp(10px,2.5vw,24px)}
-.cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(8px,1.5vw,16px);margin-bottom:clamp(10px,2vw,20px)}
-.card{background:var(--card);border:1px solid var(--line);border-radius:clamp(10px,1.5vw,14px);padding:clamp(12px,2vw,20px);box-shadow:0 4px 14px #1020300b;min-width:0}
-.label{font-size:13px;color:var(--muted);margin-bottom:8px}.value{font-size:clamp(20px,3vw,28px);font-weight:700;overflow-wrap:anywhere}
-.green{color:var(--green)}.red{color:var(--red)}
-.grid{display:grid;grid-template-columns:minmax(0,1fr);gap:clamp(10px,2vw,20px)}.grid>*{min-width:0}
-.panel + .panel{margin-top:clamp(10px,2vw,18px)}
-.panel{background:#fff;border:1px solid var(--line);border-radius:clamp(10px,1.5vw,14px);padding:clamp(12px,2vw,20px);min-width:0;width:100%}
-h2{font-size:18px;margin:0 0 16px}label{display:block;font-size:13px;font-weight:700;margin:12px 0 6px}
-input,select,textarea,button{width:100%;padding:11px;border:1px solid #d5dce5;border-radius:9px;font:inherit}
-textarea{min-height:75px;resize:vertical}button{border:0;background:var(--primary);color:#fff;font-weight:700;cursor:pointer;margin-top:15px}
-button.secondary{background:#eef3f7;color:var(--ink)}button.danger{background:#fff0ee;color:var(--red)}
-table{width:100%;border-collapse:collapse;font-size:14px}th,td{padding:11px 8px;border-bottom:1px solid var(--line);text-align:left;vertical-align:middle}th{font-size:12px;color:var(--muted)}.actions{white-space:nowrap}.action-btn{width:auto!important;margin:0 4px 0 0!important;padding:7px 9px!important;min-height:auto!important;font-size:12px;border-radius:8px}.action-edit{background:#eef3f7!important;color:var(--ink)!important}.action-delete{background:#fff0ee!important;color:var(--red)!important}
-.status{display:inline-block;padding:4px 8px;border-radius:20px;background:#edf7ef;color:var(--green);font-size:11px}
+:root{
+  --bg:#f2f2ef;
+  --surface:#ffffff;
+  --surface-2:#e9e9e5;
+  --ink:#111111;
+  --muted:#555555;
+  --line:#171717;
+  --soft-line:#bdbdb8;
+  --accent:#c7ff00;
+  --danger:#d92828;
+  --success:#16743b;
+}
+*{box-sizing:border-box}
+html{background:var(--bg)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Courier New",Courier,monospace;font-size:15px;line-height:1.45;letter-spacing:.01em}
+body:before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.18;background:repeating-linear-gradient(0deg,transparent 0,transparent 3px,#000 4px);mix-blend-mode:multiply}
+header{background:#fff;color:#111;border-bottom:2px solid #111;padding:22px clamp(16px,4vw,42px);position:relative}
+header:after{content:"";position:absolute;left:0;right:0;bottom:-7px;height:5px;background:var(--accent);border-top:1px solid #111;border-bottom:1px solid #111}
+header h1{margin:0 0 5px;font-family:"Courier New",monospace;font-size:clamp(22px,4vw,34px);font-weight:900;text-transform:uppercase;letter-spacing:.04em}
+header p{margin:0;font-size:clamp(13px,2vw,16px);font-weight:700;text-transform:uppercase;color:#333}
+main{width:min(100%,1180px);margin:auto;padding:clamp(18px,3vw,34px)}
+.cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-bottom:18px}
+.card,.panel,.settlement-box{background:var(--surface);border:1.5px solid var(--line);border-radius:0;box-shadow:5px 5px 0 #111;min-width:0}
+.card{padding:18px}
+.label{font-size:12px;color:#333;margin-bottom:8px;font-weight:800;text-transform:uppercase;letter-spacing:.08em}
+.value{font-family:"Courier New",monospace;font-size:clamp(22px,3.5vw,32px);font-weight:900;overflow-wrap:anywhere;color:#111}
+.green{color:var(--success)}.red{color:var(--danger)}
+.grid{display:grid;grid-template-columns:minmax(0,1fr);gap:18px}.grid>*{min-width:0}
+.panel + .panel{margin-top:18px}
+.panel{padding:clamp(16px,2.5vw,24px)}
+h2{font-family:"Courier New",monospace;font-size:clamp(18px,2.5vw,23px);margin:0 0 18px;font-weight:900;text-transform:uppercase;letter-spacing:.04em;border-bottom:2px solid #111;padding-bottom:10px}
+label{display:block;font-size:12px;font-weight:900;margin:14px 0 6px;text-transform:uppercase;letter-spacing:.06em}
+input,select,textarea,button{width:100%;padding:13px 12px;border:1.5px solid #111;border-radius:0;background:#fff;color:#111;font:inherit;outline:none}
+input:focus,select:focus,textarea:focus{box-shadow:4px 4px 0 var(--accent)}
+textarea{min-height:75px;resize:vertical}
+button{background:#111;color:#fff;font-weight:900;cursor:pointer;margin-top:15px;text-transform:uppercase;letter-spacing:.05em;transition:transform .08s ease,box-shadow .08s ease}
+button:hover{box-shadow:4px 4px 0 var(--accent);transform:translate(-1px,-1px)}
+button.secondary{background:#fff;color:#111;border:1.5px solid #111}
+button.danger{background:#fff;color:var(--danger);border-color:var(--danger)}
+table{width:100%;border-collapse:collapse;font-size:13px;background:#fff}
+th,td{padding:12px 9px;border:1px solid #aaa;text-align:left;vertical-align:middle}th{background:#111;color:#fff;font-size:11px;text-transform:uppercase;letter-spacing:.08em}
+.actions{white-space:nowrap}.action-btn{width:auto!important;margin:0 5px 0 0!important;padding:7px 9px!important;min-height:auto!important;font-size:11px;border-radius:0!important;box-shadow:none!important}.action-edit{background:#fff!important;color:#111!important;border:1px solid #111!important}.action-delete{background:#fff!important;color:var(--danger)!important;border:1px solid var(--danger)!important}
+.status{display:inline-block;padding:5px 9px;border-radius:0;background:#fff;color:var(--success);border:1px solid var(--success);font-size:11px;font-weight:900;text-transform:uppercase}
 .empty{text-align:center;color:var(--muted);padding:30px}
-.notice{background:#f8fafc;border:1px solid var(--line);padding:12px;border-radius:9px;font-size:12px;color:var(--muted);margin-top:12px}
- .final-status{width:100%;margin:clamp(10px,2vw,18px) 0 0}.final-status 
-.final-payment{width:100%;margin:clamp(10px,2vw,18px) 0 0}.final-payment button{width:100%;margin-top:0}
-.bottom-controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:clamp(8px,1.5vw,14px);margin-top:clamp(10px,2vw,18px)}
-.bottom-controls .card{width:100%;min-width:0}
-.bottom-controls label{margin-top:0}
-.balance-card{width:100%;min-width:0;padding:clamp(12px,2vw,20px);margin-bottom:clamp(12px,1.5vw,16px)}
-.settlement{width:100%;margin:0;padding:0;background:transparent;border:0;min-width:0}
-.settlement-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:clamp(8px,1.5vw,14px)}
-.settlement-box{background:#fff;border:1px solid var(--line);border-radius:12px;padding:15px}
-.settlement-title{font-size:13px;color:var(--muted);margin-bottom:7px}.settlement-value{font-size:24px;font-weight:700}
+.notice{background:var(--surface-2);border:1px solid #111;padding:12px;border-radius:0;font-size:12px;color:#333;margin-top:12px}
+.final-status{width:100%;margin:18px 0 0}.final-status .settlement-box{padding:18px}
+.final-payment{width:100%;margin:18px 0 0}.final-payment button{width:100%;margin-top:0;background:var(--accent);color:#111;border-color:#111;box-shadow:5px 5px 0 #111}
+.bottom-controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:18px}
+.settlement-grid{display:grid;grid-template-columns:1fr;gap:14px}.settlement-box{padding:15px}.settlement-title{font-size:12px;color:#333;margin-bottom:7px;font-weight:900;text-transform:uppercase}.settlement-value{font-size:24px;font-weight:900}
 .monthbar{display:flex;gap:10px;align-items:end;margin-bottom:15px}.monthbar>div{flex:1}
-.pill{display:inline-block;padding:5px 9px;border-radius:20px;background:#eaf7ee;color:var(--green);font-size:11px;font-weight:700}
-@media(max-width:900px){
-  html,body{width:100%;max-width:100%;overflow-x:hidden}
-  .cards,.settlement-grid,.bottom-controls{grid-template-columns:minmax(0,1fr);width:100%}
-  .cards .card:first-child{grid-column:auto}
-  .monthbar{flex-direction:column;align-items:stretch;width:100%}
-  main{width:100%;max-width:100%;overflow:hidden}
-  .panel,.card,.settlement{width:100%;max-width:100%;min-width:0}
-  .panel{overflow:hidden}
-  input,select,textarea,button{width:100%;max-width:100%;min-width:0}
-  .tablewrap{width:100%;max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
-  table{min-width:680px}
-  header{width:100%;max-width:100%;padding:clamp(16px,4vw,24px)}
-  header h1{font-size:clamp(19px,5vw,24px)}
-  button{min-height:46px}
-}
-@media(min-width:901px){
-  .monthbar{display:grid;grid-template-columns:minmax(0,1fr) minmax(180px,260px);gap:14px}
-}
-
-#authScreen{position:fixed;inset:0;z-index:9999;background:linear-gradient(135deg,#0b1d2d,#155274);display:flex;align-items:center;justify-content:center;padding:20px}
-.auth-card{width:min(100%,420px);background:#fff;border-radius:18px;padding:28px;box-shadow:0 20px 60px #0004}
-.auth-card h2{font-size:24px;margin:0 0 6px}.auth-card p{color:var(--muted);margin:0 0 20px}
-.auth-error{display:none;background:#fff0ee;color:var(--red);border:1px solid #ffd2cc;padding:10px;border-radius:9px;font-size:13px;margin-top:12px}
-.auth-loading{display:none;color:var(--muted);font-size:13px;margin-top:12px}
+.pill{display:inline-block;padding:5px 9px;border-radius:0;background:#fff;color:var(--success);border:1px solid var(--success);font-size:11px;font-weight:900;text-transform:uppercase}
+.launch-panel{margin-top:28px!important}
+.userbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:16px;font-size:12px}
+.userbar span{overflow:hidden;text-overflow:ellipsis;font-weight:700;color:#333}.userbar button{width:auto;margin:0;padding:9px 14px;min-height:auto;background:#fff;color:#111;border:1.5px solid #111;box-shadow:3px 3px 0 #111}
+#authScreen{position:fixed;inset:0;z-index:9999;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:20px}
+.auth-card{width:min(100%,440px);background:#fff;border:1.5px solid #111;border-radius:0;padding:28px;box-shadow:8px 8px 0 #111}.auth-card h2{font-size:25px;margin:0 0 7px}.auth-card p{color:#333;margin:0 0 20px;font-weight:700}.auth-error{display:none;background:#fff;color:var(--danger);border:1px solid var(--danger);padding:10px;border-radius:0;font-size:13px;margin-top:12px}.auth-loading{display:none;color:#333;font-size:13px;margin-top:12px}
 #appShell{display:none}
-.userbar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:12px;font-size:12px}
-.userbar span{opacity:.85;overflow:hidden;text-overflow:ellipsis}
-.userbar button{width:auto;margin:0;padding:8px 12px;min-height:auto;background:#ffffff18;border:1px solid #ffffff44}
+.edit-modal{position:fixed;inset:0;z-index:10000;background:#111b;display:none;align-items:center;justify-content:center;padding:18px}.edit-modal.show{display:flex}.edit-modal-card{width:min(100%,560px);max-height:92vh;overflow:auto;background:#fff;border:1.5px solid #111;border-radius:0;padding:22px;box-shadow:9px 9px 0 #111}.edit-modal-card h2{margin:0 0 7px;font-size:21px}.edit-modal-card .edit-help{margin:0 0 14px;color:#444;font-size:12px}.edit-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}.edit-actions button{margin-top:0}
+.tablewrap{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid #111}
+@media(max-width:900px){
+  html,body{width:100%;max-width:100%;overflow-x:hidden}.cards,.settlement-grid,.bottom-controls{grid-template-columns:minmax(0,1fr);width:100%}.monthbar{flex-direction:column;align-items:stretch;width:100%}main{width:100%;max-width:100%;overflow:hidden}.panel,.card,.settlement{width:100%;max-width:100%;min-width:0}.panel{overflow:hidden}input,select,textarea,button{width:100%;max-width:100%;min-width:0}.tablewrap{width:100%;max-width:100%;overflow-x:auto}.tablewrap table{min-width:720px}header{width:100%;max-width:100%;padding:18px clamp(16px,4vw,24px)}button{min-height:46px}.userbar{align-items:stretch;flex-direction:column}.userbar button{width:100%}
+}
+@media(min-width:901px){.monthbar{display:grid;grid-template-columns:minmax(0,1fr) minmax(180px,260px);gap:14px}}
+@media(max-width:600px){.edit-modal{padding:10px}.edit-modal-card{padding:16px}.edit-actions{grid-template-columns:1fr}.edit-actions button{min-height:46px}}
 </style>
 </head>
 <body>
@@ -83,6 +87,27 @@ table{width:100%;border-collapse:collapse;font-size:14px}th,td{padding:11px 8px;
     </form>
     <div id="authError" class="auth-error"></div>
     <div id="authLoading" class="auth-loading">Conectando ao Firebase...</div>
+  </div>
+</div>
+<div id="editModal" class="edit-modal" aria-hidden="true">
+  <div class="edit-modal-card">
+    <h2>Editar lançamento</h2>
+    <p class="edit-help">Altere os dados necessários e salve a alteração.</p>
+    <input id="editId" type="hidden">
+    <label>Data</label>
+    <input id="editData" type="date">
+    <label>Quem está lançando?</label>
+    <select id="editParte"><option>AB Chemicals</option><option>Dr. Portugal</option></select>
+    <label>Tipo</label>
+    <select id="editTipo"><option value="credito">Crédito</option><option value="debito">Débito</option></select>
+    <label>Valor (R$)</label>
+    <input id="editValor" type="number" step="0.01" min="0.01" placeholder="0,00">
+    <label>Descrição</label>
+    <input id="editDescricao" placeholder="Descrição do lançamento">
+    <div class="edit-actions">
+      <button type="button" class="secondary" onclick="fecharEdicao()">Cancelar</button>
+      <button type="button" onclick="salvarEdicao()">Salvar alterações</button>
+    </div>
   </div>
 </div>
 <div id="appShell">
@@ -358,30 +383,52 @@ async function registrarPagamento(){
 }
 window.registrarPagamento = registrarPagamento;
 
-async function editarLancamento(id){
+function editarLancamento(id){
   const x=lancamentos.find(item=>item.id===id);
   if(!x || x.tipo==="pagamento") return;
+  if(currentUser && x.createdByUid && x.createdByUid!==currentUser.uid){
+    alert("Você só pode editar lançamentos realizados por você.");
+    return;
+  }
 
-  const novaData=prompt("Data (AAAA-MM-DD):", x.data);
-  if(novaData===null) return;
-  if(!/^\d{4}-\d{2}-\d{2}$/.test(novaData)){ alert("Informe a data no formato AAAA-MM-DD."); return; }
+  $("editId").value=x.id;
+  $("editData").value=x.data || "";
+  $("editParte").value=x.parte || "AB Chemicals";
+  $("editTipo").value=x.tipo || "credito";
+  $("editValor").value=Number(x.valor || 0).toFixed(2);
+  $("editDescricao").value=x.descricao || "";
+  $("editModal").classList.add("show");
+  $("editModal").setAttribute("aria-hidden","false");
+}
+window.editarLancamento=editarLancamento;
 
-  const novaParte=prompt("Quem está lançando? (AB Chemicals ou Dr. Portugal):", x.parte);
-  if(novaParte===null) return;
-  if(novaParte!=="AB Chemicals" && novaParte!=="Dr. Portugal"){ alert("Parte inválida."); return; }
+function fecharEdicao(){
+  $("editModal").classList.remove("show");
+  $("editModal").setAttribute("aria-hidden","true");
+}
+window.fecharEdicao=fecharEdicao;
 
-  const novoTipo=prompt("Tipo (credito ou debito):", x.tipo);
-  if(novoTipo===null) return;
-  if(novoTipo!=="credito" && novoTipo!=="debito"){ alert("Tipo inválido. Use credito ou debito."); return; }
+async function salvarEdicao(){
+  const id=$("editId").value;
+  const x=lancamentos.find(item=>item.id===id);
+  if(!x || !currentUser || x.tipo==="pagamento") return;
+  if(x.createdByUid && x.createdByUid!==currentUser.uid){
+    alert("Você só pode editar lançamentos realizados por você.");
+    fecharEdicao();
+    return;
+  }
 
-  const novoValorTexto=prompt("Valor (R$):", String(Number(x.valor).toFixed(2)).replace(".",","));
-  if(novoValorTexto===null) return;
-  const novoValor=Number(String(novoValorTexto).replace(".","").replace(",","."));
-  if(!novoValor || novoValor<=0){ alert("Informe um valor maior que zero."); return; }
+  const novaData=$("editData").value;
+  const novaParte=$("editParte").value;
+  const novoTipo=$("editTipo").value;
+  const novoValor=Number($("editValor").value);
+  const novaDescricao=$("editDescricao").value.trim();
 
-  const novaDescricao=prompt("Descrição:", x.descricao || "");
-  if(novaDescricao===null) return;
-  if(!novaDescricao.trim()){ alert("Informe uma descrição."); return; }
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(novaData)){alert("Informe uma data válida.");return;}
+  if(novaParte!=="AB Chemicals" && novaParte!=="Dr. Portugal"){alert("Parte inválida.");return;}
+  if(novoTipo!=="credito" && novoTipo!=="debito"){alert("Tipo inválido.");return;}
+  if(!Number.isFinite(novoValor) || novoValor<=0){alert("Informe um valor maior que zero.");return;}
+  if(!novaDescricao){alert("Informe uma descrição.");return;}
 
   if(!confirm("Confirmar alteração deste lançamento?")) return;
 
@@ -391,18 +438,23 @@ async function editarLancamento(id){
       parte:novaParte,
       tipo:novoTipo,
       valor:Number(novoValor.toFixed(2)),
-      descricao:novaDescricao.trim()
+      descricao:novaDescricao
     });
+    fecharEdicao();
     alert("Lançamento atualizado com sucesso.");
   }catch(error){
     showAuthError("Não foi possível editar o lançamento no Firebase.");
   }
 }
-window.editarLancamento=editarLancamento;
+window.salvarEdicao=salvarEdicao;
 
 async function excluirLancamento(id){
   const x=lancamentos.find(item=>item.id===id);
   if(!x || x.tipo==="pagamento") return;
+  if(currentUser && x.createdByUid && x.createdByUid!==currentUser.uid){
+    alert("Você só pode excluir lançamentos realizados por você.");
+    return;
+  }
   if(!confirm(`Excluir o lançamento de ${dinheiro(x.valor)} — ${x.descricao}?\n\nEssa ação não pode ser desfeita.`)) return;
 
   try{
@@ -472,9 +524,9 @@ function render(){
       <td>${x.descricao}</td>
       <td class="${sinal>0?"green":"red"}">${sinal>0?"+":"-"} ${dinheiro(x.valor)}</td>
       <td>${reflexo}: ${sinal>0?"-":"+"} ${dinheiro(x.valor)}</td>
-      <td class="actions">
+      <td class="actions">${(!x.createdByUid || (currentUser && x.createdByUid===currentUser.uid)) ? `
         <button type="button" class="action-btn action-edit" onclick="editarLancamento('${x.id}')">Editar</button>
-        <button type="button" class="action-btn action-delete" onclick="excluirLancamento('${x.id}')">Excluir</button>
+        <button type="button" class="action-btn action-delete" onclick="excluirLancamento('${x.id}')">Excluir</button>` : '—'}
       </td>
     </tr>`;
   }).join("") : '<tr><td colspan="6" class="empty">Nenhum lançamento neste mês.</td></tr>';
