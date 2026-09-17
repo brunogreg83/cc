@@ -74,7 +74,10 @@ table{width:100%;border-collapse:collapse;font-size:14px}th,td{padding:11px 8px;
 .edit-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
 .edit-actions button{margin-top:0}
 @media(max-width:600px){.edit-modal{padding:10px}.edit-modal-card{padding:16px;border-radius:14px}.edit-actions{grid-template-columns:1fr}.edit-actions button{min-height:46px}}
-</style>
+
+.logged-party-info{margin-top:-4px;margin-bottom:14px;font-size:13px;color:#667085}
+select:disabled{opacity:1;color:#20242a;background:#f4f6f8;cursor:not-allowed}
+.balance-card .label#receberLabel{font-weight:700}\n</style>
 </head>
 <body>
 
@@ -143,7 +146,8 @@ table{width:100%;border-collapse:collapse;font-size:14px}th,td{padding:11px 8px;
 <h2>Novo lançamento</h2>
 <label>Data</label><input id="data" type="date">
 <label>Quem está lançando?</label>
-<select id="parte"><option>AB Chemicals</option><option>Dr. Portugal</option></select>
+<select id="parte" disabled><option value="AB Chemicals">AB Chemicals</option><option value="Dr. Portugal">Dr. Portugal</option></select>
+<div id="loggedPartyInfo" class="logged-party-info"></div>
 <label>Tipo</label>
 <select id="tipo"><option value="credito">Crédito</option><option value="debito">Débito</option></select>
 <label>Valor (R$)</label><input id="valor" type="number" step="0.01" min="0.01" placeholder="0,00">
@@ -258,6 +262,15 @@ function firebaseErrorMessage(error){
   return map[error.code] || "Não foi possível concluir a operação. Verifique a configuração do Firebase.";
 }
 
+function atualizarUsuarioLancando(user){
+  if(!user) return;
+  const email=(user.email||"").trim().toLowerCase();
+  const parte = email === "abchemicalspr@gmail.com" ? "AB Chemicals" : "Dr. Portugal";
+  $("parte").value=parte;
+  $("parte").disabled=true;
+  $("loggedPartyInfo").textContent = `Usuário logado: ${user.email || "Usuário autenticado"}`;
+}
+
 function iniciarFirebase(){
   if(!firebaseConfigured){
     showAuthError("O Firebase ainda não foi configurado neste arquivo. É necessário inserir a configuração do seu projeto Firebase.");
@@ -274,6 +287,7 @@ function iniciarFirebase(){
       $("authScreen").style.display="none";
       $("appShell").style.display="block";
       $("loggedUser").textContent = user.email || "Usuário autenticado";
+      atualizarUsuarioLancando(user);
       ouvirLancamentos();
     }else{
       $("authScreen").style.display="flex";
