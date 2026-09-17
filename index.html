@@ -21,7 +21,7 @@ h2{font-size:18px;margin:0 0 16px}label{display:block;font-size:13px;font-weight
 input,select,textarea,button{width:100%;padding:11px;border:1px solid #d5dce5;border-radius:9px;font:inherit}
 textarea{min-height:75px;resize:vertical}button{border:0;background:var(--primary);color:#fff;font-weight:700;cursor:pointer;margin-top:15px}
 button.secondary{background:#eef3f7;color:var(--ink)}button.danger{background:#fff0ee;color:var(--red)}
-table{width:100%;border-collapse:collapse;font-size:14px}th,td{padding:11px 8px;border-bottom:1px solid var(--line);text-align:left}th{font-size:12px;color:var(--muted)}
+table{width:100%;border-collapse:collapse;font-size:14px}th,td{padding:11px 8px;border-bottom:1px solid var(--line);text-align:left;vertical-align:middle}th{font-size:12px;color:var(--muted)}.actions{white-space:nowrap}.action-btn{width:auto!important;margin:0 4px 0 0!important;padding:7px 9px!important;min-height:auto!important;font-size:12px;border-radius:8px}.action-edit{background:#eef3f7!important;color:var(--ink)!important}.action-delete{background:#fff0ee!important;color:var(--red)!important}
 .status{display:inline-block;padding:4px 8px;border-radius:20px;background:#edf7ef;color:var(--green);font-size:11px}
 .empty{text-align:center;color:var(--muted);padding:30px}
 .notice{background:#f8fafc;border:1px solid var(--line);padding:12px;border-radius:9px;font-size:12px;color:var(--muted);margin-top:12px}
@@ -126,7 +126,7 @@ table{width:100%;border-collapse:collapse;font-size:14px}th,td{padding:11px 8px;
 <section class="panel">
 <h2>Extrato da conta corrente</h2>
 <div class="tablewrap">
-<table><thead><tr><th>Data</th><th>Parte</th><th>Descrição</th><th>Valor</th><th>Reflexo</th></tr></thead>
+<table><thead><tr><th>Data</th><th>Parte</th><th>Descrição</th><th>Valor</th><th>Reflexo</th><th>Ações</th></tr></thead>
 <tbody id="extrato"></tbody></table>
 </div>
 
@@ -175,7 +175,7 @@ import {
   sendPasswordResetEmail, signOut
 } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
 import {
-  getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp
+  getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy, serverTimestamp
 } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
 
 /* CONFIGURAÇÃO DO SEU PROJETO FIREBASE
@@ -358,6 +358,62 @@ async function registrarPagamento(){
 }
 window.registrarPagamento = registrarPagamento;
 
+async function editarLancamento(id){
+  const x=lancamentos.find(item=>item.id===id);
+  if(!x || x.tipo==="pagamento") return;
+
+  const novaData=prompt("Data (AAAA-MM-DD):", x.data);
+  if(novaData===null) return;
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(novaData)){ alert("Informe a data no formato AAAA-MM-DD."); return; }
+
+  const novaParte=prompt("Quem está lançando? (AB Chemicals ou Dr. Portugal):", x.parte);
+  if(novaParte===null) return;
+  if(novaParte!=="AB Chemicals" && novaParte!=="Dr. Portugal"){ alert("Parte inválida."); return; }
+
+  const novoTipo=prompt("Tipo (credito ou debito):", x.tipo);
+  if(novoTipo===null) return;
+  if(novoTipo!=="credito" && novoTipo!=="debito"){ alert("Tipo inválido. Use credito ou debito."); return; }
+
+  const novoValorTexto=prompt("Valor (R$):", String(Number(x.valor).toFixed(2)).replace(".",","));
+  if(novoValorTexto===null) return;
+  const novoValor=Number(String(novoValorTexto).replace(".","").replace(",","."));
+  if(!novoValor || novoValor<=0){ alert("Informe um valor maior que zero."); return; }
+
+  const novaDescricao=prompt("Descrição:", x.descricao || "");
+  if(novaDescricao===null) return;
+  if(!novaDescricao.trim()){ alert("Informe uma descrição."); return; }
+
+  if(!confirm("Confirmar alteração deste lançamento?")) return;
+
+  try{
+    await updateDoc(doc(db,"conta_corrente_lancamentos",id),{
+      data:novaData,
+      parte:novaParte,
+      tipo:novoTipo,
+      valor:Number(novoValor.toFixed(2)),
+      descricao:novaDescricao.trim()
+    });
+    alert("Lançamento atualizado com sucesso.");
+  }catch(error){
+    showAuthError("Não foi possível editar o lançamento no Firebase.");
+  }
+}
+window.editarLancamento=editarLancamento;
+
+async function excluirLancamento(id){
+  const x=lancamentos.find(item=>item.id===id);
+  if(!x || x.tipo==="pagamento") return;
+  if(!confirm(`Excluir o lançamento de ${dinheiro(x.valor)} — ${x.descricao}?\n\nEssa ação não pode ser desfeita.`)) return;
+
+  try{
+    await deleteDoc(doc(db,"conta_corrente_lancamentos",id));
+    alert("Lançamento excluído com sucesso.");
+  }catch(error){
+    showAuthError("Não foi possível excluir o lançamento no Firebase.");
+  }
+}
+window.excluirLancamento=excluirLancamento;
+
 function render(){
   const mes=mesAtual();
   let ab=0,dp=0,qtd=0;
@@ -404,6 +460,7 @@ function render(){
         <td>${x.descricao}</td>
         <td class="green">+ ${dinheiro(x.valor)}</td>
         <td>${reflexo}: - ${dinheiro(x.valor)}</td>
+        <td class="actions">—</td>
       </tr>`;
     }
 
@@ -415,8 +472,12 @@ function render(){
       <td>${x.descricao}</td>
       <td class="${sinal>0?"green":"red"}">${sinal>0?"+":"-"} ${dinheiro(x.valor)}</td>
       <td>${reflexo}: ${sinal>0?"-":"+"} ${dinheiro(x.valor)}</td>
+      <td class="actions">
+        <button type="button" class="action-btn action-edit" onclick="editarLancamento('${x.id}')">Editar</button>
+        <button type="button" class="action-btn action-delete" onclick="excluirLancamento('${x.id}')">Excluir</button>
+      </td>
     </tr>`;
-  }).join("") : '<tr><td colspan="5" class="empty">Nenhum lançamento neste mês.</td></tr>';
+  }).join("") : '<tr><td colspan="6" class="empty">Nenhum lançamento neste mês.</td></tr>';
 }
 
 $("mes").addEventListener("change",render);
