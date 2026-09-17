@@ -25,7 +25,9 @@ table{width:100%;border-collapse:collapse;font-size:14px}th,td{padding:11px 8px;
 .status{display:inline-block;padding:4px 8px;border-radius:20px;background:#edf7ef;color:var(--green);font-size:11px}
 .empty{text-align:center;color:var(--muted);padding:30px}
 .notice{background:#f8fafc;border:1px solid var(--line);padding:12px;border-radius:9px;font-size:12px;color:var(--muted);margin-top:12px}
- .bottom-controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:clamp(8px,1.5vw,14px);margin-top:clamp(10px,2vw,18px)}
+ .final-status{width:100%;margin:clamp(10px,2vw,18px) 0 0}.final-status .settlement-box{width:100%;min-width:0}
+.final-payment{width:100%;margin:clamp(10px,2vw,18px) 0 0}.final-payment button{width:100%;margin-top:0}
+.bottom-controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:clamp(8px,1.5vw,14px);margin-top:clamp(10px,2vw,18px)}
 .bottom-controls .card{width:100%;min-width:0}
 .bottom-controls label{margin-top:0}
 .settlement{width:100%;margin:clamp(10px,2vw,18px) 0 0;background:#f8fafc;border:1px solid var(--line);border-radius:clamp(10px,1.5vw,14px);padding:clamp(12px,2vw,20px);min-width:0}
@@ -68,21 +70,15 @@ table{width:100%;border-collapse:collapse;font-size:14px}th,td{padding:11px 8px;
 <section class="settlement">
   <div class="monthbar">
     
-    <div>
-      <button onclick="registrarPagamento()">Registrar pagamento e zerar o mês</button>
-    </div>
   </div>
   <div class="settlement-grid">
     <div class="settlement-box">
       <div id="saldoPagarTitulo" class="settlement-title">Saldo a pagar</div>
       <div id="saldoPagar" class="settlement-value green">R$ 0,00</div>
     </div>
-    <div class="settlement-box">
-      <div class="settlement-title">Situação do mês</div>
-      <div id="situacao" class="settlement-value"><span class="pill">EM ABERTO</span></div>
-    </div>
+
   </div>
-  <div class="notice">No fechamento do mês, o pagamento é registrado como uma contrapartida. O saldo daquele mês fica zerado, enquanto o histórico permanece guardado.</div>
+  
 </section>
 <section class="panel">
 <h2>Novo lançamento</h2>
@@ -96,7 +92,7 @@ table{width:100%;border-collapse:collapse;font-size:14px}th,td{padding:11px 8px;
 <label>Documento / referência</label><input id="documento" placeholder="NF, recibo, referência...">
 <label>Observação</label><textarea id="obs"></textarea>
 <button onclick="lancar()">Registrar lançamento</button>
-<div class="notice">Cada lançamento é registrado uma única vez e o reflexo contrário é calculado automaticamente para a outra parte.</div>
+
 </section>
 <section class="panel">
 <h2>Extrato da conta corrente</h2>
@@ -129,6 +125,17 @@ table{width:100%;border-collapse:collapse;font-size:14px}th,td{padding:11px 8px;
 </div>
 
 
+
+
+<section class="final-status">
+      <div class="settlement-box">
+      <div class="settlement-title">Situação do mês</div>
+      <div id="situacao" class="settlement-value"><span class="pill">EM ABERTO</span></div>
+    </div>
+</section>
+<div class="final-payment">
+  <button onclick="registrarPagamento()">Registrar pagamento e zerar o mês</button>
+</div>
 </main>
 
 <script>
