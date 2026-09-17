@@ -55,12 +55,40 @@ table{width:100%;border-collapse:collapse;font-size:14px}th,td{padding:11px 8px;
 @media(min-width:901px){
   .monthbar{display:grid;grid-template-columns:minmax(0,1fr) minmax(180px,260px);gap:14px}
 }
+
+#authScreen{position:fixed;inset:0;z-index:9999;background:linear-gradient(135deg,#0b1d2d,#155274);display:flex;align-items:center;justify-content:center;padding:20px}
+.auth-card{width:min(100%,420px);background:#fff;border-radius:18px;padding:28px;box-shadow:0 20px 60px #0004}
+.auth-card h2{font-size:24px;margin:0 0 6px}.auth-card p{color:var(--muted);margin:0 0 20px}
+.auth-error{display:none;background:#fff0ee;color:var(--red);border:1px solid #ffd2cc;padding:10px;border-radius:9px;font-size:13px;margin-top:12px}
+.auth-loading{display:none;color:var(--muted);font-size:13px;margin-top:12px}
+#appShell{display:none}
+.userbar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:12px;font-size:12px}
+.userbar span{opacity:.85;overflow:hidden;text-overflow:ellipsis}
+.userbar button{width:auto;margin:0;padding:8px 12px;min-height:auto;background:#ffffff18;border:1px solid #ffffff44}
 </style>
 </head>
 <body>
+
+<div id="authScreen">
+  <div class="auth-card">
+    <h2>Conta Corrente</h2>
+    <p>AB Chemicals × Dr. Portugal</p>
+    <form id="loginForm">
+      <label>E-mail</label>
+      <input id="loginEmail" type="email" autocomplete="username" placeholder="seu@email.com" required>
+      <label>Senha</label>
+      <input id="loginPassword" type="password" autocomplete="current-password" placeholder="Sua senha" required>
+      <button type="submit">Entrar</button>
+      <button type="button" class="secondary" id="resetPasswordBtn">Esqueci minha senha</button>
+    </form>
+    <div id="authError" class="auth-error"></div>
+    <div id="authLoading" class="auth-loading">Conectando ao Firebase...</div>
+  </div>
+</div>
+<div id="appShell">
 <header>
 <h1>Conta Corrente</h1>
-<p>AB Chemicals × Dr. Portugal</p>
+<p>AB Chemicals × Dr. Portugal</p><div class="userbar"><span id="loggedUser"></span><button id="logoutBtn" type="button">Sair</button></div>
 </header>
 <main>
 <section class="cards">
@@ -138,156 +166,299 @@ table{width:100%;border-collapse:collapse;font-size:14px}th,td{padding:11px 8px;
   <button onclick="registrarPagamento()">Registrar pagamento e zerar o mês</button>
 </div>
 </main>
+</div>
 
-<script>
-const KEY="ab_dp_conta_corrente_v2";
-const $=id=>document.getElementById(id);
-const hoje=new Date();
-$("data").value=hoje.toISOString().slice(0,10);
-$("mes").value=hoje.toISOString().slice(0,7);
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
+import {
+  getAuth, onAuthStateChanged, signInWithEmailAndPassword,
+  sendPasswordResetEmail, signOut
+} from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
+import {
+  getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp
+} from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
 
-function getLanc(){return JSON.parse(localStorage.getItem(KEY)||"[]")}
-function save(a){localStorage.setItem(KEY,JSON.stringify(a))}
-function dinheiro(n){return Number(n).toLocaleString("pt-BR",{style:"currency",currency:"BRL"})}
-function mesAtual(){return $("mes").value}
+/* CONFIGURAÇÃO DO SEU PROJETO FIREBASE
+   Substitua os valores abaixo pelo objeto firebaseConfig
+   fornecido pelo Firebase Console.
+*/
+const firebaseConfig = {
+  apiKey: "AIzaSyCbjcYmPP2pPDFHkDVwOGsy25GBeoV7E0I",
+  authDomain: "ccorrente-b78cc.firebaseapp.com",
+  projectId: "ccorrente-b78cc",
+  storageBucket: "ccorrente-b78cc.firebasestorage.app",
+  messagingSenderId: "663844675532",
+  appId: "1:663844675532:web:2c2c617e888a680e0c0769"
+};
+
+const firebaseConfigured = !Object.values(firebaseConfig).some(v => String(v).startsWith("COLE_AQUI"));
+
+const $ = id => document.getElementById(id);
+const hoje = new Date();
+$("data").value = hoje.toISOString().slice(0,10);
+$("mes").value = hoje.toISOString().slice(0,7);
+
+let auth, db, currentUser = null;
+let lancamentos = [];
+let unsubscribeLancamentos = null;
+
+function dinheiro(n){
+  return Number(n).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
+}
+function mesAtual(){ return $("mes").value; }
+
+function showAuthError(msg){
+  $("authError").textContent = msg;
+  $("authError").style.display = "block";
+}
+function clearAuthError(){
+  $("authError").textContent = "";
+  $("authError").style.display = "none";
+}
+function firebaseErrorMessage(error){
+  const map = {
+    "auth/invalid-credential":"E-mail ou senha incorretos.",
+    "auth/invalid-email":"Informe um e-mail válido.",
+    "auth/user-not-found":"Usuário não encontrado.",
+    "auth/wrong-password":"Senha incorreta.",
+    "auth/too-many-requests":"Muitas tentativas. Tente novamente mais tarde.",
+    "auth/network-request-failed":"Falha de conexão. Verifique a internet.",
+    "auth/operation-not-allowed":"O login por e-mail e senha ainda não está habilitado no Firebase."
+  };
+  return map[error.code] || "Não foi possível concluir a operação. Verifique a configuração do Firebase.";
+}
+
+function iniciarFirebase(){
+  if(!firebaseConfigured){
+    showAuthError("O Firebase ainda não foi configurado neste arquivo. É necessário inserir a configuração do seu projeto Firebase.");
+    return;
+  }
+
+  const app = initializeApp(firebaseConfig);
+  auth = getAuth(app);
+  db = getFirestore(app);
+
+  onAuthStateChanged(auth, user => {
+    currentUser = user;
+    if(user){
+      $("authScreen").style.display="none";
+      $("appShell").style.display="block";
+      $("loggedUser").textContent = user.email || "Usuário autenticado";
+      ouvirLancamentos();
+    }else{
+      $("authScreen").style.display="flex";
+      $("appShell").style.display="none";
+      if(unsubscribeLancamentos){
+        unsubscribeLancamentos();
+        unsubscribeLancamentos=null;
+      }
+      lancamentos=[];
+    }
+  });
+}
+
+function ouvirLancamentos(){
+  if(unsubscribeLancamentos) unsubscribeLancamentos();
+
+  const ref = collection(db,"conta_corrente_lancamentos");
+  const q = query(ref, orderBy("data","desc"));
+
+  unsubscribeLancamentos = onSnapshot(q, snap => {
+    lancamentos = snap.docs.map(doc => ({id:doc.id,...doc.data()}));
+    render();
+  }, error => {
+    showAuthError("Não foi possível carregar os lançamentos do Firebase. Verifique as regras do Firestore.");
+  });
+}
 
 function saldoDoMes(mes){
- let saldo=0;
- getLanc().forEach(x=>{
-   if(x.data.slice(0,7)!==mes) return;
+  let saldo=0;
+  lancamentos.forEach(x=>{
+    if(x.data.slice(0,7)!==mes) return;
 
-   if(x.tipo==="pagamento"){
-     // O pagamento reduz o saldo positivo de quem recebe
-     // e aumenta a posição da contraparte.
-     saldo += x.parte==="AB Chemicals" ? x.valor : -x.valor;
-     return;
-   }
+    if(x.tipo==="pagamento"){
+      saldo += x.parte==="AB Chemicals" ? x.valor : -x.valor;
+      return;
+    }
 
-   const sinal=x.tipo==="credito"?1:-1;
-   if(x.parte==="AB Chemicals"){
-     saldo += sinal*x.valor;
-   }else{
-     saldo -= sinal*x.valor;
-   }
- });
- return saldo;
+    const sinal=x.tipo==="credito"?1:-1;
+    saldo += x.parte==="AB Chemicals" ? sinal*x.valor : -sinal*x.valor;
+  });
+  return saldo;
 }
 
-function lancar(){
- const valor=Number($("valor").value);
- const descricao=$("descricao").value.trim();
- if(!valor||valor<=0||!descricao){alert("Informe valor e descrição.");return}
- const a=getLanc();
- a.push({
-  id:Date.now(),data:$("data").value,parte:$("parte").value,tipo:$("tipo").value,
-  valor,descricao
- });
- save(a);
- render();
- $("valor").value="";
- $("descricao").value="";
- 
- 
- alert("Lançamento registrado e contabilizado para as duas partes.");
+async function lancar(){
+  clearAuthError();
+  const valor=Number($("valor").value);
+  const descricao=$("descricao").value.trim();
+
+  if(!valor || valor<=0 || !descricao){
+    alert("Informe valor e descrição.");
+    return;
+  }
+  if(!currentUser){
+    alert("Faça login para registrar o lançamento.");
+    return;
+  }
+
+  try{
+    await addDoc(collection(db,"conta_corrente_lancamentos"),{
+      data:$("data").value,
+      parte:$("parte").value,
+      tipo:$("tipo").value,
+      valor:Number(valor.toFixed(2)),
+      descricao,
+      createdByUid:currentUser.uid,
+      createdByEmail:currentUser.email || "",
+      createdAt:serverTimestamp()
+    });
+
+    $("valor").value="";
+    $("descricao").value="";
+    alert("Lançamento registrado e contabilizado para as duas partes.");
+  }catch(error){
+    showAuthError("Não foi possível salvar o lançamento no Firebase.");
+  }
 }
+window.lancar = lancar;
 
-function registrarPagamento(){
- const mes=mesAtual();
- const saldo=saldoDoMes(mes);
+async function registrarPagamento(){
+  clearAuthError();
+  const mes=mesAtual();
+  const saldo=saldoDoMes(mes);
 
- if(Math.abs(saldo)<0.005){
-   alert("O mês já está zerado.");
-   return;
- }
+  if(Math.abs(saldo)<0.005){
+    alert("O mês já está zerado.");
+    return;
+  }
 
- const valor=Math.abs(Number(saldo.toFixed(2)));
- const recebedor=saldo>0 ? "AB Chemicals" : "Dr. Portugal";
- const pagador=saldo>0 ? "Dr. Portugal" : "AB Chemicals";
- const ultimoDia=new Date(Number(mes.slice(0,4)),Number(mes.slice(5,7)),0).toISOString().slice(0,10);
+  const valor=Math.abs(Number(saldo.toFixed(2)));
+  const recebedor=saldo>0 ? "AB Chemicals" : "Dr. Portugal";
+  const pagador=saldo>0 ? "Dr. Portugal" : "AB Chemicals";
+  const ultimoDia=new Date(Number(mes.slice(0,4)),Number(mes.slice(5,7)),0).toISOString().slice(0,10);
 
- if(!confirm(`${pagador} deverá pagar ${dinheiro(valor)} para ${recebedor}. Confirmar fechamento do mês?`)) return;
+  if(!confirm(`${pagador} deverá pagar ${dinheiro(valor)} para ${recebedor}. Confirmar fechamento do mês?`)) return;
 
- const a=getLanc();
- a.push({
-   id:Date.now(),
-   data:ultimoDia,
-   parte:pagador,
-   tipo:"pagamento",
-   valor,
-   descricao:`Pagamento de fechamento do mês — ${recebedor}`
- });
- save(a);
- render();
- alert(`Pagamento registrado: ${pagador} → ${recebedor}. O saldo do mês foi zerado.`);
+  try{
+    await addDoc(collection(db,"conta_corrente_lancamentos"),{
+      data:ultimoDia,
+      parte:pagador,
+      tipo:"pagamento",
+      valor,
+      descricao:`Pagamento de fechamento do mês — ${recebedor}`,
+      createdByUid:currentUser.uid,
+      createdByEmail:currentUser.email || "",
+      createdAt:serverTimestamp()
+    });
+
+    alert(`Pagamento registrado: ${pagador} → ${recebedor}. O saldo do mês foi zerado.`);
+  }catch(error){
+    showAuthError("Não foi possível registrar o pagamento no Firebase.");
+  }
 }
+window.registrarPagamento = registrarPagamento;
 
 function render(){
- const mes=mesAtual();
- const a=getLanc();
- let ab=0,dp=0,qtd=0;
+  const mes=mesAtual();
+  let ab=0,dp=0,qtd=0;
 
- a.forEach(x=>{
-   if(x.data.slice(0,7)!==mes) return;
+  lancamentos.forEach(x=>{
+    if(x.data.slice(0,7)!==mes) return;
 
-   if(x.tipo==="pagamento"){
-     if(x.parte==="AB Chemicals"){
-       ab += x.valor;
-       dp -= x.valor;
-     }else{
-       ab -= x.valor;
-       dp += x.valor;
-     }
-     return;
-   }
+    if(x.tipo==="pagamento"){
+      if(x.parte==="AB Chemicals"){ ab+=x.valor; dp-=x.valor; }
+      else { ab-=x.valor; dp+=x.valor; }
+      return;
+    }
 
-   qtd++;
-   const sinal=x.tipo==="credito"?1:-1;
+    qtd++;
+    const sinal=x.tipo==="credito"?1:-1;
+    if(x.parte==="AB Chemicals"){ ab+=sinal*x.valor; dp-=sinal*x.valor; }
+    else { dp+=sinal*x.valor; ab-=sinal*x.valor; }
+  });
 
-   if(x.parte==="AB Chemicals"){
-     ab += sinal*x.valor;
-     dp -= sinal*x.valor;
-   }else{
-     dp += sinal*x.valor;
-     ab -= sinal*x.valor;
-   }
- });
+  const saldoAB=ab;
+  const saldoDP=dp;
 
- const saldoAB=ab;
- const saldoDP=dp;
- $("saldoAB").textContent=dinheiro(saldoAB);
- $("saldoDP").textContent=dinheiro(saldoDP);
- $("saldoAB").className="value "+(saldoAB>=0?"green":"red");
- $("saldoDP").className="value "+(saldoDP>=0?"green":"red");
- $("qtd").textContent=qtd;
- const saldoPositivo=Math.max(0, Math.abs(saldoAB));
-const recebedor=saldoAB>0.005 ? "AB Chemicals" : (saldoAB< -0.005 ? "Dr. Portugal" : "Nenhuma das partes");
-$("saldoPagarTitulo").textContent =
-  Math.abs(saldoAB)>0.005 ? `Saldo a receber — ${recebedor}` : "Saldo a receber";
-$("saldoPagar").textContent=dinheiro(saldoPositivo);
+  $("saldoAB").textContent=dinheiro(saldoAB);
+  $("saldoDP").textContent=dinheiro(saldoDP);
+  $("saldoAB").className="value "+(saldoAB>=0?"green":"red");
+  $("saldoDP").className="value "+(saldoDP>=0?"green":"red");
+  $("qtd").textContent=qtd;
 
- const fechado=Math.abs(saldoAB)<0.005 && a.some(x=>x.data.slice(0,7)===mes && x.tipo==="pagamento");
- $("situacao").innerHTML=fechado?'<span class="pill">ZERADO / FECHADO</span>':'<span class="pill">EM ABERTO</span>';
+  const recebedor=saldoAB>0.005 ? "AB Chemicals" : (saldoAB< -0.005 ? "Dr. Portugal" : "Nenhuma das partes");
+  $("saldoPagarTitulo").textContent=Math.abs(saldoAB)>0.005 ? `Saldo a receber — ${recebedor}` : "Saldo a receber";
+  $("saldoPagar").textContent=dinheiro(Math.max(0,Math.abs(saldoAB)));
+  $("saldoPagar").className="value "+(saldoAB>=0?"green":"red");
 
- $("extrato").innerHTML=a.filter(x=>x.data.slice(0,7)===mes).slice().reverse().map(x=>{
-   if(x.tipo==="pagamento"){
-     const recebedorPagamento=x.parte==="AB Chemicals"?"AB Chemicals":"Dr. Portugal";
-     const pagadorPagamento=x.parte==="AB Chemicals"?"AB Chemicals":"Dr. Portugal";
-     const reflexoPagamento=x.parte==="AB Chemicals"?"Dr. Portugal":"AB Chemicals";
-     return `<tr><td>${new Date(x.data+"T12:00:00").toLocaleDateString("pt-BR")}</td>
-     <td>${pagadorPagamento}</td><td>${x.descricao}</td>
-     <td class="green">+ ${dinheiro(x.valor)}</td>
-     <td>${reflexoPagamento}: - ${dinheiro(x.valor)}</td></tr>`;
-   }
-   const sinal=x.tipo==="credito"?1:-1;
-   const reflexo=x.parte==="AB Chemicals"?"Dr. Portugal":"AB Chemicals";
-   return `<tr><td>${new Date(x.data+"T12:00:00").toLocaleDateString("pt-BR")}</td>
-   <td>${x.parte}</td><td>${x.descricao}</td>
-   <td class="${sinal>0?"green":"red"}">${sinal>0?"+":"-"} ${dinheiro(x.valor)}</td>
-   <td>${reflexo}: ${sinal>0?"-":"+"} ${dinheiro(x.valor)}</td><td>${x.documento||"—"}</td></tr>`
- }).join("")||'<tr><td colspan="5" class="empty">Nenhum lançamento neste mês.</td></tr>';
+  const fechado=Math.abs(saldoAB)<0.005 && lancamentos.some(x=>x.data.slice(0,7)===mes && x.tipo==="pagamento");
+  $("situacao").innerHTML=fechado?'<span class="pill">ZERADO / FECHADO</span>':'<span class="pill">EM ABERTO</span>';
+
+  const lista=lancamentos.filter(x=>x.data.slice(0,7)===mes);
+  $("extrato").innerHTML=lista.length ? lista.map(x=>{
+    if(x.tipo==="pagamento"){
+      const reflexo=x.parte==="AB Chemicals"?"Dr. Portugal":"AB Chemicals";
+      return `<tr>
+        <td>${new Date(x.data+"T12:00:00").toLocaleDateString("pt-BR")}</td>
+        <td>${x.parte}</td>
+        <td>${x.descricao}</td>
+        <td class="green">+ ${dinheiro(x.valor)}</td>
+        <td>${reflexo}: - ${dinheiro(x.valor)}</td>
+      </tr>`;
+    }
+
+    const sinal=x.tipo==="credito"?1:-1;
+    const reflexo=x.parte==="AB Chemicals"?"Dr. Portugal":"AB Chemicals";
+    return `<tr>
+      <td>${new Date(x.data+"T12:00:00").toLocaleDateString("pt-BR")}</td>
+      <td>${x.parte}</td>
+      <td>${x.descricao}</td>
+      <td class="${sinal>0?"green":"red"}">${sinal>0?"+":"-"} ${dinheiro(x.valor)}</td>
+      <td>${reflexo}: ${sinal>0?"-":"+"} ${dinheiro(x.valor)}</td>
+    </tr>`;
+  }).join("") : '<tr><td colspan="5" class="empty">Nenhum lançamento neste mês.</td></tr>';
 }
+
 $("mes").addEventListener("change",render);
-render();
+
+$("loginForm").addEventListener("submit", async e=>{
+  e.preventDefault();
+  clearAuthError();
+
+  if(!firebaseConfigured){
+    showAuthError("Configure o Firebase no arquivo antes de fazer login.");
+    return;
+  }
+
+  $("authLoading").style.display="block";
+  try{
+    await signInWithEmailAndPassword(auth,$("loginEmail").value.trim(),$("loginPassword").value);
+    $("loginPassword").value="";
+  }catch(error){
+    showAuthError(firebaseErrorMessage(error));
+  }finally{
+    $("authLoading").style.display="none";
+  }
+});
+
+$("resetPasswordBtn").addEventListener("click", async ()=>{
+  clearAuthError();
+  if(!firebaseConfigured){showAuthError("Configure o Firebase no arquivo antes de usar esta função.");return;}
+  const email=$("loginEmail").value.trim();
+  if(!email){showAuthError("Digite seu e-mail primeiro.");return;}
+  try{
+    await sendPasswordResetEmail(auth,email);
+    alert("E-mail para redefinição de senha enviado.");
+  }catch(error){
+    showAuthError(firebaseErrorMessage(error));
+  }
+});
+
+$("logoutBtn").addEventListener("click", async ()=>{
+  if(auth) await signOut(auth);
+});
+
+iniciarFirebase();
 </script>
 </body>
 </html>
