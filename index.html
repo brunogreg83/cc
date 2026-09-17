@@ -30,7 +30,7 @@ table{width:100%;border-collapse:collapse;font-size:14px}th,td{padding:11px 8px;
 .bottom-controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:clamp(8px,1.5vw,14px);margin-top:clamp(10px,2vw,18px)}
 .bottom-controls .card{width:100%;min-width:0}
 .bottom-controls label{margin-top:0}
-.balance-card{width:100%;min-width:0;padding:clamp(12px,2vw,20px);margin-top:clamp(-8px,-1vw,-4px);margin-bottom:0}
+.balance-card{width:100%;min-width:0;padding:clamp(12px,2vw,20px);margin-bottom:clamp(12px,1.5vw,16px)}
 .settlement{width:100%;margin:0;padding:0;background:transparent;border:0;min-width:0}
 .settlement-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:clamp(8px,1.5vw,14px)}
 .settlement-box{background:#fff;border:1px solid var(--line);border-radius:12px;padding:15px}
@@ -90,15 +90,15 @@ table{width:100%;border-collapse:collapse;font-size:14px}th,td{padding:11px 8px;
 <select id="tipo"><option value="credito">Crédito</option><option value="debito">Débito</option></select>
 <label>Valor (R$)</label><input id="valor" type="number" step="0.01" min="0.01" placeholder="0,00">
 <label>Descrição</label><input id="descricao" placeholder="Ex.: Compra, pagamento, bonificação...">
-<label>Documento / referência</label><input id="documento" placeholder="NF, recibo, referência...">
-<label>Observação</label><textarea id="obs"></textarea>
+
+
 <button onclick="lancar()">Registrar lançamento</button>
 
 </section>
 <section class="panel">
 <h2>Extrato da conta corrente</h2>
 <div class="tablewrap">
-<table><thead><tr><th>Data</th><th>Parte</th><th>Descrição</th><th>Valor</th><th>Reflexo</th><th>Documento</th></tr></thead>
+<table><thead><tr><th>Data</th><th>Parte</th><th>Descrição</th><th>Valor</th><th>Reflexo</th></tr></thead>
 <tbody id="extrato"></tbody></table>
 </div>
 
@@ -154,10 +154,21 @@ function mesAtual(){return $("mes").value}
 function saldoDoMes(mes){
  let saldo=0;
  getLanc().forEach(x=>{
-   if(x.data.slice(0,7)!==mes || x.tipo==="pagamento") return;
-   // Pela regra da conta: crédito da AB = positivo para AB e negativo para Dr. Portugal.
-   // Débito da AB = negativo para AB e positivo para Dr. Portugal.
-   saldo += (x.tipo==="credito"?1:-1)*x.valor;
+   if(x.data.slice(0,7)!==mes) return;
+
+   if(x.tipo==="pagamento"){
+     // O pagamento reduz o saldo positivo de quem recebe
+     // e aumenta a posição da contraparte.
+     saldo += x.parte==="AB Chemicals" ? x.valor : -x.valor;
+     return;
+   }
+
+   const sinal=x.tipo==="credito"?1:-1;
+   if(x.parte==="AB Chemicals"){
+     saldo += sinal*x.valor;
+   }else{
+     saldo -= sinal*x.valor;
+   }
  });
  return saldo;
 }
@@ -169,21 +180,25 @@ function lancar(){
  const a=getLanc();
  a.push({
   id:Date.now(),data:$("data").value,parte:$("parte").value,tipo:$("tipo").value,
-  valor,descricao,documento:$("documento").value.trim(),obs:$("obs").value.trim()
+  valor,descricao
  });
  save(a);
  render();
  $("valor").value="";
  $("descricao").value="";
- $("documento").value="";
- $("obs").value="";
+ 
+ 
  alert("Lançamento registrado e contabilizado para as duas partes.");
 }
 
 function registrarPagamento(){
  const mes=mesAtual();
  const saldo=saldoDoMes(mes);
- if(Math.abs(saldo)<0.005){alert("O mês já está zerado.");return}
+
+ if(Math.abs(saldo)<0.005){
+   alert("O mês já está zerado.");
+   return;
+ }
 
  const valor=Math.abs(Number(saldo.toFixed(2)));
  const recebedor=saldo>0 ? "AB Chemicals" : "Dr. Portugal";
@@ -194,12 +209,15 @@ function registrarPagamento(){
 
  const a=getLanc();
  a.push({
-   id:Date.now(),data:ultimoDia,parte:pagador,tipo:"pagamento",
-   valor,descricao:`Pagamento de fechamento do mês — ${recebedor}`,
-   documento:"FECHAMENTO",
-   obs:`Pagamento de ${pagador} para ${recebedor}, encerrando o saldo positivo do mês.`
+   id:Date.now(),
+   data:ultimoDia,
+   parte:pagador,
+   tipo:"pagamento",
+   valor,
+   descricao:`Pagamento de fechamento do mês — ${recebedor}`
  });
- save(a);render();
+ save(a);
+ render();
  alert(`Pagamento registrado: ${pagador} → ${recebedor}. O saldo do mês foi zerado.`);
 }
 
@@ -207,23 +225,24 @@ function render(){
  const mes=mesAtual();
  const a=getLanc();
  let ab=0,dp=0,qtd=0;
+
  a.forEach(x=>{
    if(x.data.slice(0,7)!==mes) return;
 
    if(x.tipo==="pagamento"){
-     // O pagamento de fechamento reduz o saldo devedor da AB e do fornecedor
-     // pelo mesmo valor, deixando o mês zerado.
-     ab-=x.valor;
-     dp+=x.valor;
+     if(x.parte==="AB Chemicals"){
+       ab += x.valor;
+       dp -= x.valor;
+     }else{
+       ab -= x.valor;
+       dp += x.valor;
+     }
      return;
    }
 
    qtd++;
    const sinal=x.tipo==="credito"?1:-1;
 
-   // REGRA BILATERAL:
-   // Quem faz o lançamento recebe o sinal escolhido.
-   // A outra parte recebe automaticamente a contrapartida inversa.
    if(x.parte==="AB Chemicals"){
      ab += sinal*x.valor;
      dp -= sinal*x.valor;
@@ -246,15 +265,18 @@ $("saldoPagarTitulo").textContent =
   Math.abs(saldoAB)>0.005 ? `Saldo a receber — ${recebedor}` : "Saldo a receber";
 $("saldoPagar").textContent=dinheiro(saldoPositivo);
 
- const fechado=a.some(x=>x.data.slice(0,7)===mes && x.tipo==="pagamento");
+ const fechado=Math.abs(saldoAB)<0.005 && a.some(x=>x.data.slice(0,7)===mes && x.tipo==="pagamento");
  $("situacao").innerHTML=fechado?'<span class="pill">ZERADO / FECHADO</span>':'<span class="pill">EM ABERTO</span>';
 
  $("extrato").innerHTML=a.filter(x=>x.data.slice(0,7)===mes).slice().reverse().map(x=>{
    if(x.tipo==="pagamento"){
+     const recebedorPagamento=x.parte==="AB Chemicals"?"AB Chemicals":"Dr. Portugal";
+     const pagadorPagamento=x.parte==="AB Chemicals"?"AB Chemicals":"Dr. Portugal";
+     const reflexoPagamento=x.parte==="AB Chemicals"?"Dr. Portugal":"AB Chemicals";
      return `<tr><td>${new Date(x.data+"T12:00:00").toLocaleDateString("pt-BR")}</td>
-     <td>${x.parte}</td><td>${x.descricao}</td>
+     <td>${pagadorPagamento}</td><td>${x.descricao}</td>
      <td class="green">+ ${dinheiro(x.valor)}</td>
-     <td>AB Chemicals: - ${dinheiro(x.valor)}</td><td>${x.documento||"—"}</td></tr>`;
+     <td>${reflexoPagamento}: - ${dinheiro(x.valor)}</td></tr>`;
    }
    const sinal=x.tipo==="credito"?1:-1;
    const reflexo=x.parte==="AB Chemicals"?"Dr. Portugal":"AB Chemicals";
@@ -262,7 +284,7 @@ $("saldoPagar").textContent=dinheiro(saldoPositivo);
    <td>${x.parte}</td><td>${x.descricao}</td>
    <td class="${sinal>0?"green":"red"}">${sinal>0?"+":"-"} ${dinheiro(x.valor)}</td>
    <td>${reflexo}: ${sinal>0?"-":"+"} ${dinheiro(x.valor)}</td><td>${x.documento||"—"}</td></tr>`
- }).join("")||'<tr><td colspan="6" class="empty">Nenhum lançamento neste mês.</td></tr>';
+ }).join("")||'<tr><td colspan="5" class="empty">Nenhum lançamento neste mês.</td></tr>';
 }
 $("mes").addEventListener("change",render);
 render();
