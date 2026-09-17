@@ -5,83 +5,75 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Conta Corrente | AB Chemicals × Dr. Portugal</title>
 <style>
-:root{--bg:#f5f6f7;--surface:#fff;--surface-soft:#eef0f2;--ink:#111827;--muted:#667085;--line:#d9dde3;--line-dark:#aeb5bf;--green:#17834b;--red:#c43131;--accent:#111827;--blue:#2563eb}
-*{box-sizing:border-box}
-html{scroll-behavior:smooth;background:var(--bg)}
-body{margin:0;background:var(--bg);color:var(--ink);font-family:"IBM Plex Mono","Courier New",monospace;font-size:14px;line-height:1.45}
-button,input,select,textarea{font:inherit}
-button{cursor:pointer}
-#appShell{display:none}
-.app-layout{min-height:100vh;display:grid;grid-template-columns:210px minmax(0,1fr)}
-.sidebar{position:sticky;top:0;height:100vh;background:#eceff2;border-right:1px solid var(--line);padding:28px 16px;display:flex;flex-direction:column}
-.side-brand{font-weight:900;font-size:18px;line-height:1.05;letter-spacing:.08em;padding:4px 10px 28px;border-bottom:1px solid var(--line-dark)}
-.side-nav{padding-top:18px;display:grid;gap:4px}
-.side-nav a{color:#1f2937;text-decoration:none;padding:12px 10px;border-left:3px solid transparent;font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.02em}
-.side-nav a:hover{background:#e1e5e9}
-.side-nav a.active{background:#fff;border-left-color:#111827}
-.side-footer{margin-top:auto;padding:16px 10px 4px;border-top:1px solid var(--line-dark);font-size:9px;line-height:1.7;font-weight:800;color:#4b5563;letter-spacing:.08em}
-.side-footer span{font-weight:500;color:#7a8490}
-.content-area{min-width:0}
-.topbar{background:#fff;border-bottom:1px solid var(--line);padding:24px clamp(18px,4vw,46px);display:flex;justify-content:space-between;align-items:flex-start;gap:24px}
-.eyebrow{font-size:10px;font-weight:900;letter-spacing:.1em;color:#667085;text-transform:uppercase;margin-bottom:6px}
-.topbar h1{margin:0;font-size:clamp(25px,3.5vw,36px);line-height:1.1;letter-spacing:-.04em;font-weight:900}
-.topbar p{margin:7px 0 0;color:#667085;font-size:12px;font-family:Arial,sans-serif}
-.top-actions{display:flex;align-items:flex-start;gap:12px}
-.month-selector{background:#f7f8f9;border:1px solid var(--line);padding:8px 10px;display:flex;align-items:center;gap:8px}
-.month-selector span{font-size:9px;font-weight:900;color:#667085}
-.month-selector input{border:0;background:transparent;padding:0;width:145px;color:#111827}
-.user-area{display:flex;align-items:center;gap:10px}
-.user-area span{max-width:190px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:10px;font-weight:800;color:#4b5563}
-.user-area button{width:auto;margin:0;padding:9px 13px;background:#fff;color:#111827;border:1px solid #111827}
-main{width:min(100%,1220px);margin:0 auto;padding:28px clamp(18px,4vw,46px) 50px}
-.section-head{display:flex;justify-content:space-between;align-items:flex-end;gap:14px;margin-bottom:14px}
-.section-head>div{display:flex;align-items:baseline;gap:10px}
-.section-head h2{margin:0;font-size:18px;line-height:1.1;font-weight:900;letter-spacing:-.02em;text-transform:none;border:0;padding:0}
-.section-index{font-size:9px;color:#8b95a1;font-weight:900}
-.section-note{font-size:9px;color:#8b95a1;font-weight:900;letter-spacing:.08em}
-.cards-section{margin-bottom:28px}
-.cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
-.card,.panel,.settlement-box{background:var(--surface);border:1px solid var(--line);border-radius:7px;box-shadow:0 1px 2px #1018280a;min-width:0}
-.balance-card{padding:18px 18px 15px;min-height:130px}
-.label{font-size:10px;color:#667085;margin-bottom:9px;font-weight:900;text-transform:uppercase;letter-spacing:.06em}
-.value{font-size:clamp(24px,3vw,32px);font-weight:900;letter-spacing:-.04em;overflow-wrap:anywhere}
+:root{--bg:#f4f7fb;--card:#fff;--ink:#142235;--muted:#667085;--line:#e5eaf1;--primary:#123c5a;--green:#15803d;--red:#b42318}
+*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:var(--bg);color:var(--ink)}
+header{background:linear-gradient(135deg,#0b1d2d,#155274);color:#fff;padding:24px 18px}
+header h1{margin:0 0 6px;font-size:24px}header p{margin:0;opacity:.85}
+main{width:min(100%,1100px);margin:auto;padding:clamp(10px,2.5vw,24px)}
+.cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(8px,1.5vw,16px);margin-bottom:clamp(10px,2vw,20px)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:clamp(10px,1.5vw,14px);padding:clamp(12px,2vw,20px);box-shadow:0 4px 14px #1020300b;min-width:0}
+.label{font-size:13px;color:var(--muted);margin-bottom:8px}.value{font-size:clamp(20px,3vw,28px);font-weight:700;overflow-wrap:anywhere}
 .green{color:var(--green)}.red{color:var(--red)}
-.card-foot{margin-top:15px;padding-top:9px;border-top:1px solid #eceef1;color:#98a1ad;font-size:9px;font-weight:900;letter-spacing:.06em}
-.panel{padding:22px;margin-bottom:20px}
-.launch-panel{margin-top:0!important}
-.form-grid{display:grid;gap:12px}
-.form-grid-top{grid-template-columns:1fr 1.25fr 1fr}
-.form-grid-bottom{grid-template-columns:.7fr 2fr;margin-top:2px}
-label{display:block;font-size:10px;font-weight:900;margin:10px 0 6px;text-transform:uppercase;letter-spacing:.05em;color:#4b5563}
-input,select,textarea{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:5px;background:#fff;color:#111827;outline:none}
-input:focus,select:focus,textarea:focus{border-color:#111827;box-shadow:0 0 0 2px #11182712}
-button{border-radius:5px}
-.primary-action{margin-top:16px;background:#111827;color:#fff;border:1px solid #111827;padding:12px 16px;font-weight:900;text-transform:none;letter-spacing:0;width:100%}
-.primary-action:hover{background:#273142}
-.table-meta{display:flex;justify-content:space-between;align-items:center;padding:0 0 10px;font-size:11px;color:#4b5563}
-.table-meta strong{font-weight:900;color:#111827}
-.tablewrap{width:100%;overflow-x:auto;border:1px solid var(--line);border-radius:6px}
-table{width:100%;border-collapse:collapse;font-size:12px;background:#fff}
-th,td{padding:11px 10px;border-bottom:1px solid #e7e9ed;text-align:left;vertical-align:middle}th{background:#f4f5f6;color:#596273;font-size:9px;text-transform:uppercase;letter-spacing:.07em;font-weight:900}tr:last-child td{border-bottom:0}tbody tr:hover{background:#fafbfc}
-.actions{white-space:nowrap}.action-btn{width:auto!important;margin:0 5px 0 0!important;padding:6px 9px!important;min-height:auto!important;font-size:10px;border-radius:4px!important;box-shadow:none!important;text-transform:none!important}.action-edit{background:#fff!important;color:#111827!important;border:1px solid #aeb5bf!important}.action-delete{background:#fff!important;color:var(--red)!important;border:1px solid #e0a0a0!important}
-.empty{text-align:center;color:#98a1ad;padding:28px}
-.summary-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0 0 28px}
-.compact-card{padding:16px 18px}.compact-card .value{font-size:25px}.compact-card label{margin-top:0}.compact-card input{margin-top:0}
-.closing-section{border-top:1px solid var(--line);padding-top:24px}
-.closing-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.settlement-box{padding:18px}
-.settlement-title{font-size:10px;color:#667085;margin-bottom:8px;font-weight:900;text-transform:uppercase;letter-spacing:.06em}
-.settlement-value{font-size:20px;font-weight:900}
-.settlement-help{color:#667085;font-family:Arial,sans-serif;font-size:12px;margin-bottom:14px}
-.pill{display:inline-block;padding:7px 10px;border-radius:4px;background:#f1f8f4;color:var(--green);border:1px solid #b9ddc8;font-size:10px;font-weight:900;text-transform:uppercase}
-.payment-action{width:100%;margin:0;background:#111827;color:#fff;border:1px solid #111827;padding:11px 13px;font-weight:900}
-.payment-action:hover{background:#273142}
-#authScreen{position:fixed;inset:0;z-index:9999;background:#f5f6f7;display:flex;align-items:center;justify-content:center;padding:20px}
-.auth-card{width:min(100%,420px);background:#fff;border:1px solid var(--line);border-radius:8px;padding:28px;box-shadow:0 8px 28px #10182812}.auth-card h2{font-size:24px;margin:0 0 6px;font-weight:900;letter-spacing:-.03em}.auth-card p{color:#667085;margin:0 0 20px;font-family:Arial,sans-serif;font-size:13px}.auth-card button{margin-top:12px}.auth-card button.secondary{background:#fff;color:#111827;border:1px solid var(--line)}
-.auth-error{display:none;background:#fff5f5;color:var(--red);border:1px solid #e8b4b4;padding:10px;border-radius:5px;font-size:12px;margin-top:12px}.auth-loading{display:none;color:#667085;font-size:12px;margin-top:12px}
-.edit-modal{position:fixed;inset:0;z-index:10000;background:#10182866;display:none;align-items:center;justify-content:center;padding:18px}.edit-modal.show{display:flex}.edit-modal-card{width:min(100%,560px);max-height:92vh;overflow:auto;background:#fff;border:1px solid var(--line);border-radius:8px;padding:22px;box-shadow:0 18px 45px #10182826}.edit-modal-card h2{margin:0 0 7px;font-size:20px;font-weight:900}.edit-modal-card .edit-help{margin:0 0 14px;color:#667085;font-family:Arial,sans-serif;font-size:12px}.edit-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}.edit-actions button{margin-top:0}.edit-actions button.secondary{background:#fff;color:#111827;border:1px solid var(--line)}
-@media(max-width:900px){.app-layout{grid-template-columns:1fr}.sidebar{position:relative;height:auto;padding:12px 14px;border-right:0;border-bottom:1px solid var(--line)}.side-brand{padding:4px 8px 10px;border-bottom:0}.side-nav{display:flex;overflow-x:auto;padding:0;gap:3px}.side-nav a{white-space:nowrap;padding:8px 9px;border-left:0;border-bottom:2px solid transparent}.side-nav a.active{border-bottom-color:#111827;background:#fff}.side-footer{display:none}.topbar{padding:18px}.top-actions{flex-direction:column;align-items:stretch}.month-selector input{width:100%}.user-area{justify-content:space-between}.user-area button{width:auto}.cards{grid-template-columns:1fr}.form-grid-top,.form-grid-bottom,.summary-grid,.closing-grid{grid-template-columns:1fr}main{padding:22px 18px 40px}.tablewrap table{min-width:720px}}
-@media(max-width:600px){.topbar{display:block}.top-actions{margin-top:16px}.user-area{display:flex}.section-head{align-items:flex-start}.section-note{display:none}.panel{padding:17px}.balance-card{min-height:120px}.edit-modal{padding:10px}.edit-modal-card{padding:16px}.edit-actions{grid-template-columns:1fr}.edit-actions button{min-height:46px}}
+.grid{display:grid;grid-template-columns:minmax(0,1fr);gap:clamp(10px,2vw,20px)}.grid>*{min-width:0}
+.panel + .panel{margin-top:clamp(10px,2vw,18px)}
+.panel{background:#fff;border:1px solid var(--line);border-radius:clamp(10px,1.5vw,14px);padding:clamp(12px,2vw,20px);min-width:0;width:100%}
+h2{font-size:18px;margin:0 0 16px}label{display:block;font-size:13px;font-weight:700;margin:12px 0 6px}
+input,select,textarea,button{width:100%;padding:11px;border:1px solid #d5dce5;border-radius:9px;font:inherit}
+textarea{min-height:75px;resize:vertical}button{border:0;background:var(--primary);color:#fff;font-weight:700;cursor:pointer;margin-top:15px}
+button.secondary{background:#eef3f7;color:var(--ink)}button.danger{background:#fff0ee;color:var(--red)}
+table{width:100%;border-collapse:collapse;font-size:14px}th,td{padding:11px 8px;border-bottom:1px solid var(--line);text-align:left;vertical-align:middle}th{font-size:12px;color:var(--muted)}.actions{white-space:nowrap}.action-btn{width:auto!important;margin:0 4px 0 0!important;padding:7px 9px!important;min-height:auto!important;font-size:12px;border-radius:8px}.action-edit{background:#eef3f7!important;color:var(--ink)!important}.action-delete{background:#fff0ee!important;color:var(--red)!important}
+.status{display:inline-block;padding:4px 8px;border-radius:20px;background:#edf7ef;color:var(--green);font-size:11px}
+.empty{text-align:center;color:var(--muted);padding:30px}
+.notice{background:#f8fafc;border:1px solid var(--line);padding:12px;border-radius:9px;font-size:12px;color:var(--muted);margin-top:12px}
+ .final-status{width:100%;margin:clamp(10px,2vw,18px) 0 0}.final-status 
+.final-payment{width:100%;margin:clamp(10px,2vw,18px) 0 0}.final-payment button{width:100%;margin-top:0}
+.bottom-controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:clamp(8px,1.5vw,14px);margin-top:clamp(10px,2vw,18px)}
+.bottom-controls .card{width:100%;min-width:0}
+.bottom-controls label{margin-top:0}
+.balance-card{width:100%;min-width:0;padding:clamp(12px,2vw,20px);margin-bottom:clamp(12px,1.5vw,16px)}
+.settlement{width:100%;margin:0;padding:0;background:transparent;border:0;min-width:0}
+.settlement-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:clamp(8px,1.5vw,14px)}
+.settlement-box{background:#fff;border:1px solid var(--line);border-radius:12px;padding:15px}
+.settlement-title{font-size:13px;color:var(--muted);margin-bottom:7px}.settlement-value{font-size:24px;font-weight:700}
+.monthbar{display:flex;gap:10px;align-items:end;margin-bottom:15px}.monthbar>div{flex:1}
+.pill{display:inline-block;padding:5px 9px;border-radius:20px;background:#eaf7ee;color:var(--green);font-size:11px;font-weight:700}
+@media(max-width:900px){
+  html,body{width:100%;max-width:100%;overflow-x:hidden}
+  .cards,.settlement-grid,.bottom-controls{grid-template-columns:minmax(0,1fr);width:100%}
+  .cards .card:first-child{grid-column:auto}
+  .monthbar{flex-direction:column;align-items:stretch;width:100%}
+  main{width:100%;max-width:100%;overflow:hidden}
+  .panel,.card,.settlement{width:100%;max-width:100%;min-width:0}
+  .panel{overflow:hidden}
+  input,select,textarea,button{width:100%;max-width:100%;min-width:0}
+  .tablewrap{width:100%;max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  table{min-width:680px}
+  header{width:100%;max-width:100%;padding:clamp(16px,4vw,24px)}
+  header h1{font-size:clamp(19px,5vw,24px)}
+  button{min-height:46px}
+}
+@media(min-width:901px){
+  .monthbar{display:grid;grid-template-columns:minmax(0,1fr) minmax(180px,260px);gap:14px}
+}
+
+#authScreen{position:fixed;inset:0;z-index:9999;background:linear-gradient(135deg,#0b1d2d,#155274);display:flex;align-items:center;justify-content:center;padding:20px}
+.auth-card{width:min(100%,420px);background:#fff;border-radius:18px;padding:28px;box-shadow:0 20px 60px #0004}
+.auth-card h2{font-size:24px;margin:0 0 6px}.auth-card p{color:var(--muted);margin:0 0 20px}
+.auth-error{display:none;background:#fff0ee;color:var(--red);border:1px solid #ffd2cc;padding:10px;border-radius:9px;font-size:13px;margin-top:12px}
+.auth-loading{display:none;color:var(--muted);font-size:13px;margin-top:12px}
+#appShell{display:none}
+.userbar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:12px;font-size:12px}
+.userbar span{opacity:.85;overflow:hidden;text-overflow:ellipsis}
+.userbar button{width:auto;margin:0;padding:8px 12px;min-height:auto;background:#ffffff18;border:1px solid #ffffff44}
+
+.edit-modal{position:fixed;inset:0;z-index:10000;background:#0008;display:none;align-items:center;justify-content:center;padding:18px}
+.edit-modal.show{display:flex}
+.edit-modal-card{width:min(100%,520px);max-height:92vh;overflow:auto;background:#fff;border-radius:16px;padding:20px;box-shadow:0 20px 60px #0005}
+.edit-modal-card h2{margin:0 0 6px;font-size:21px}
+.edit-modal-card .edit-help{margin:0 0 14px;color:var(--muted);font-size:12px}
+.edit-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
+.edit-actions button{margin-top:0}
+@media(max-width:600px){.edit-modal{padding:10px}.edit-modal-card{padding:16px;border-radius:14px}.edit-actions{grid-template-columns:1fr}.edit-actions button{min-height:46px}}
 </style>
 </head>
 <body>
@@ -124,96 +116,86 @@ th,td{padding:11px 10px;border-bottom:1px solid #e7e9ed;text-align:left;vertical
   </div>
 </div>
 <div id="appShell">
-  <div class="app-layout">
-    <aside class="sidebar">
-      <div class="side-brand">CONTA<br>CORRENTE</div>
-      <nav class="side-nav" aria-label="Navegação principal">
-        <a class="active" href="#visao-geral">Conta Corrente</a>
-        <a href="#novo-lancamento">Novo Lançamento</a>
-        <a href="#extrato">Extrato</a>
-        <a href="#fechamento">Fechamento Mensal</a>
-      </nav>
-      <div class="side-footer">AB CHEMICALS × DR. PORTUGAL<br><span>CONTROLE FINANCEIRO</span></div>
-    </aside>
+<header>
+<h1>Conta Corrente</h1>
+<p>AB Chemicals × Dr. Portugal</p><div class="userbar"><span id="loggedUser"></span><button id="logoutBtn" type="button">Sair</button></div>
+</header>
+<main>
+<section class="cards">
+<div class="card"><div class="label">Saldo — AB Chemicals</div><div id="saldoAB" class="value green">R$ 0,00</div></div>
+<div class="card"><div class="label">Saldo — Dr. Portugal</div><div id="saldoDP" class="value red">R$ 0,00</div></div>
 
-    <div class="content-area">
-      <header class="topbar">
-        <div>
-          <div class="eyebrow">AB CHEMICALS × DR. PORTUGAL</div>
-          <h1>Conta Corrente</h1>
-          <p>Controle de lançamentos e fechamento mensal</p>
-        </div>
-        <div class="top-actions">
-          <div class="month-selector">
-            <span>MÊS</span>
-            <input id="mesTop" type="month" aria-label="Mês da conta corrente">
-          </div>
-          <div class="user-area">
-            <span id="loggedUser"></span>
-            <button id="logoutBtn" type="button">Sair</button>
-          </div>
-        </div>
-      </header>
+</section>
+<section class="settlement">
+  <div class="monthbar">
+    
+  </div>
+  <div class="settlement-grid">
+    <div class="card balance-card">
+      <div id="saldoPagarTitulo" class="label">Saldo a pagar</div>
+      <div id="saldoPagar" class="value green">R$ 0,00</div>
+    </div>
 
-      <main>
-        <section id="visao-geral" class="cards-section">
-          <div class="section-head">
-            <div><span class="section-index">01</span><h2>Visão geral</h2></div>
-            <span class="section-note">SALDOS ATUAIS</span>
-          </div>
-          <div class="cards">
-            <div class="card balance-card"><div class="label">Saldo — AB Chemicals</div><div id="saldoAB" class="value green">R$ 0,00</div><div class="card-foot">SALDO ATUAL</div></div>
-            <div class="card balance-card"><div class="label">Saldo — Dr. Portugal</div><div id="saldoDP" class="value red">R$ 0,00</div><div class="card-foot">SALDO ATUAL</div></div>
-            <div class="card balance-card"><div id="saldoPagarTitulo" class="label">Saldo a receber</div><div id="saldoPagar" class="value green">R$ 0,00</div><div class="card-foot">SALDO PENDENTE</div></div>
-          </div>
-        </section>
+  </div>
+  
+</section>
+<section class="panel launch-panel">
+<h2>Novo lançamento</h2>
+<label>Data</label><input id="data" type="date">
+<label>Quem está lançando?</label>
+<select id="parte"><option>AB Chemicals</option><option>Dr. Portugal</option></select>
+<label>Tipo</label>
+<select id="tipo"><option value="credito">Crédito</option><option value="debito">Débito</option></select>
+<label>Valor (R$)</label><input id="valor" type="number" step="0.01" min="0.01" placeholder="0,00">
+<label>Descrição</label><input id="descricao" placeholder="Ex.: Compra, pagamento, bonificação...">
 
-        <section id="novo-lancamento" class="panel launch-panel">
-          <div class="section-head">
-            <div><span class="section-index">02</span><h2>Novo lançamento</h2></div>
-            <span class="section-note">REGISTRO</span>
-          </div>
-          <div class="form-grid form-grid-top">
-            <div><label>Data</label><input id="data" type="date"></div>
-            <div><label>Quem está lançando?</label><select id="parte"><option>AB Chemicals</option><option>Dr. Portugal</option></select></div>
-            <div><label>Tipo</label><select id="tipo"><option value="credito">Crédito</option><option value="debito">Débito</option></select></div>
-          </div>
-          <div class="form-grid form-grid-bottom">
-            <div><label>Valor (R$)</label><input id="valor" type="number" step="0.01" min="0.01" placeholder="0,00"></div>
-            <div><label>Descrição</label><input id="descricao" placeholder="Ex.: Compra, pagamento, bonificação..."></div>
-          </div>
-          <button class="primary-action" onclick="lancar()">Registrar lançamento</button>
-        </section>
 
-        <section id="extrato" class="panel">
-          <div class="section-head">
-            <div><span class="section-index">03</span><h2>Extrato</h2></div>
-            <span class="section-note">LANÇAMENTOS DO MÊS</span>
-          </div>
-          <div class="table-meta"><strong>Lançamentos do mês</strong><span id="monthLabel">—</span></div>
-          <div class="tablewrap">
-            <table><thead><tr><th>Data</th><th>Parte</th><th>Descrição</th><th>Valor</th><th>Reflexo</th><th>Ações</th></tr></thead><tbody id="extratoBody"></tbody></table>
-          </div>
-        </section>
+<button onclick="lancar()">Registrar lançamento</button>
 
-        <section class="summary-grid">
-          <div class="card compact-card"><div class="label">Lançamentos do mês</div><div id="qtd" class="value">0</div></div>
-          <div class="card compact-card"><label>Mês da conta corrente</label><input id="mes" type="month"></div>
-        </section>
+</section>
+<section class="panel">
+<h2>Extrato da conta corrente</h2>
+<div class="tablewrap">
+<table><thead><tr><th>Data</th><th>Parte</th><th>Descrição</th><th>Valor</th><th>Reflexo</th><th>Ações</th></tr></thead>
+<tbody id="extrato"></tbody></table>
+</div>
 
-        <section id="fechamento" class="closing-section">
-          <div class="section-head">
-            <div><span class="section-index">04</span><h2>Fechamento mensal</h2></div>
-            <span class="section-note">STATUS</span>
-          </div>
-          <div class="closing-grid">
-            <div class="settlement-box"><div class="settlement-title">Situação do mês</div><div id="situacao" class="settlement-value"><span class="pill">EM ABERTO</span></div></div>
-            <div class="settlement-box"><div class="settlement-title">Ação de fechamento</div><div class="settlement-help">Registre o pagamento somente quando o saldo do mês estiver definido.</div><button class="payment-action" onclick="registrarPagamento()">Registrar pagamento e zerar o mês</button></div>
-          </div>
-        </section>
-      </main>
+</section>
+<section class="bottom-controls">
+  <div class="card">
+    <div class="label">Lançamentos do mês</div>
+    <div id="qtd" class="value">0</div>
+  </div>
+  <div class="card">
+    <div>
+      <label>Mês da conta corrente</label>
+      <input id="mes" type="month">
     </div>
   </div>
+</section>
+
+
+
+
+
+
+
+
+</div>
+
+
+
+
+<section class="final-status">
+      <div class="settlement-box">
+      <div class="settlement-title">Situação do mês</div>
+      <div id="situacao" class="settlement-value"><span class="pill">EM ABERTO</span></div>
+    </div>
+</section>
+<div class="final-payment">
+  <button onclick="registrarPagamento()">Registrar pagamento e zerar o mês</button>
+</div>
+</main>
 </div>
 
 <script type="module">
@@ -245,7 +227,6 @@ const $ = id => document.getElementById(id);
 const hoje = new Date();
 $("data").value = hoje.toISOString().slice(0,10);
 $("mes").value = hoje.toISOString().slice(0,7);
-$("mesTop").value = hoje.toISOString().slice(0,7);
 
 let auth, db, currentUser = null;
 let lancamentos = [];
@@ -492,10 +473,6 @@ window.excluirLancamento=excluirLancamento;
 
 function render(){
   const mes=mesAtual();
-  if($('monthLabel')){
-    const [yy,mm]=mes.split("-");
-    $('monthLabel').textContent = yy && mm ? new Date(Number(yy),Number(mm)-1,1).toLocaleDateString("pt-BR",{month:"long",year:"numeric"}).toUpperCase() : "—";
-  }
   let ab=0,dp=0,qtd=0;
 
   lancamentos.forEach(x=>{
@@ -531,7 +508,7 @@ function render(){
   $("situacao").innerHTML=fechado?'<span class="pill">ZERADO / FECHADO</span>':'<span class="pill">EM ABERTO</span>';
 
   const lista=lancamentos.filter(x=>x.data.slice(0,7)===mes);
-  $("extratoBody").innerHTML=lista.length ? lista.map(x=>{
+  $("extrato").innerHTML=lista.length ? lista.map(x=>{
     if(x.tipo==="pagamento"){
       const reflexo=x.parte==="AB Chemicals"?"Dr. Portugal":"AB Chemicals";
       return `<tr>
@@ -560,8 +537,7 @@ function render(){
   }).join("") : '<tr><td colspan="6" class="empty">Nenhum lançamento neste mês.</td></tr>';
 }
 
-$("mes").addEventListener("change",()=>{ $("mesTop").value=$("mes").value; render(); });
-$("mesTop").addEventListener("change",()=>{ $("mes").value=$("mesTop").value; render(); });
+$("mes").addEventListener("change",render);
 
 $("loginForm").addEventListener("submit", async e=>{
   e.preventDefault();
