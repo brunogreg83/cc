@@ -9,13 +9,13 @@
 *{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:var(--bg);color:var(--ink)}
 header{background:linear-gradient(135deg,#0b1d2d,#155274);color:#fff;padding:24px 18px}
 header h1{margin:0 0 6px;font-size:24px}header p{margin:0;opacity:.85}
-main{max-width:1100px;margin:auto;padding:18px}
-.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:18px}
-.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;box-shadow:0 4px 14px #1020300b}
-.label{font-size:13px;color:var(--muted);margin-bottom:8px}.value{font-size:25px;font-weight:700}
+main{width:min(100%,1100px);margin:auto;padding:clamp(10px,2.5vw,24px)}
+.cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(8px,1.5vw,16px);margin-bottom:clamp(10px,2vw,20px)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:clamp(10px,1.5vw,14px);padding:clamp(12px,2vw,20px);box-shadow:0 4px 14px #1020300b;min-width:0}
+.label{font-size:13px;color:var(--muted);margin-bottom:8px}.value{font-size:clamp(20px,3vw,28px);font-weight:700;overflow-wrap:anywhere}
 .green{color:var(--green)}.red{color:var(--red)}
-.grid{display:grid;grid-template-columns:340px 1fr;gap:18px}
-.panel{background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px}
+.grid{display:grid;grid-template-columns:minmax(min(100%,320px),34%) minmax(0,1fr);gap:clamp(10px,2vw,20px)}.grid>*{min-width:0}
+.panel{background:#fff;border:1px solid var(--line);border-radius:clamp(10px,1.5vw,14px);padding:clamp(12px,2vw,20px);min-width:0}
 h2{font-size:18px;margin:0 0 16px}label{display:block;font-size:13px;font-weight:700;margin:12px 0 6px}
 input,select,textarea,button{width:100%;padding:11px;border:1px solid #d5dce5;border-radius:9px;font:inherit}
 textarea{min-height:75px;resize:vertical}button{border:0;background:var(--primary);color:#fff;font-weight:700;cursor:pointer;margin-top:15px}
@@ -24,7 +24,30 @@ table{width:100%;border-collapse:collapse;font-size:14px}th,td{padding:11px 8px;
 .status{display:inline-block;padding:4px 8px;border-radius:20px;background:#edf7ef;color:var(--green);font-size:11px}
 .empty{text-align:center;color:var(--muted);padding:30px}
 .notice{background:#f8fafc;border:1px solid var(--line);padding:12px;border-radius:9px;font-size:12px;color:var(--muted);margin-top:12px}
-@media(max-width:800px){.cards,.grid{grid-template-columns:1fr}.cards .card:first-child{grid-column:auto}table{min-width:720px}.tablewrap{overflow:auto}}
+ .settlement{margin-top:clamp(10px,2vw,18px);background:#f8fafc;border:1px solid var(--line);border-radius:clamp(10px,1.5vw,14px);padding:clamp(12px,2vw,20px);min-width:0}
+.settlement-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:clamp(8px,1.5vw,14px)}
+.settlement-box{background:#fff;border:1px solid var(--line);border-radius:12px;padding:15px}
+.settlement-title{font-size:13px;color:var(--muted);margin-bottom:7px}.settlement-value{font-size:24px;font-weight:700}
+.monthbar{display:flex;gap:10px;align-items:end;margin-bottom:15px}.monthbar>div{flex:1}
+.pill{display:inline-block;padding:5px 9px;border-radius:20px;background:#eaf7ee;color:var(--green);font-size:11px;font-weight:700}
+@media(max-width:900px){
+  html,body{width:100%;max-width:100%;overflow-x:hidden}
+  .cards,.grid,.settlement-grid{grid-template-columns:minmax(0,1fr);width:100%}
+  .cards .card:first-child{grid-column:auto}
+  .monthbar{flex-direction:column;align-items:stretch;width:100%}
+  main{width:100%;max-width:100%;overflow:hidden}
+  .panel,.card,.settlement{width:100%;max-width:100%;min-width:0}
+  .panel{overflow:hidden}
+  input,select,textarea,button{width:100%;max-width:100%;min-width:0}
+  .tablewrap{width:100%;max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  table{min-width:680px}
+  header{width:100%;max-width:100%;padding:clamp(16px,4vw,24px)}
+  header h1{font-size:clamp(19px,5vw,24px)}
+  button{min-height:46px}
+}
+@media(min-width:901px){
+  .monthbar{display:grid;grid-template-columns:minmax(0,1fr) minmax(180px,260px);gap:14px}
+}
 </style>
 </head>
 <body>
@@ -34,9 +57,9 @@ table{width:100%;border-collapse:collapse;font-size:14px}th,td{padding:11px 8px;
 </header>
 <main>
 <section class="cards">
-<div class="card"><div class="label">Saldo da AB Chemicals</div><div id="saldoAB" class="value">R$ 0,00</div></div>
-<div class="card"><div class="label">Saldo do Dr. Portugal</div><div id="saldoDP" class="value">R$ 0,00</div></div>
-<div class="card"><div class="label">Lançamentos</div><div id="qtd" class="value">0</div></div>
+<div class="card"><div class="label">Saldo devedor a receber — AB Chemicals</div><div id="saldoAB" class="value green">R$ 0,00</div></div>
+<div class="card"><div class="label">Contrapartida — Dr. Portugal</div><div id="saldoDP" class="value red">R$ 0,00</div></div>
+<div class="card"><div class="label">Lançamentos do mês</div><div id="qtd" class="value">0</div></div>
 </section>
 
 <div class="grid">
@@ -64,53 +87,123 @@ table{width:100%;border-collapse:collapse;font-size:14px}th,td{padding:11px 8px;
 <button class="secondary" onclick="limpar()">Limpar dados locais</button>
 </section>
 </div>
+
+<section class="settlement">
+  <div class="monthbar">
+    <div>
+      <label>Mês da conta corrente</label>
+      <input id="mes" type="month">
+    </div>
+    <div>
+      <button onclick="registrarPagamento()">Registrar pagamento e zerar o mês</button>
+    </div>
+  </div>
+  <div class="settlement-grid">
+    <div class="settlement-box">
+      <div class="settlement-title">Saldo a pagar à AB Chemicals</div>
+      <div id="saldoPagar" class="settlement-value green">R$ 0,00</div>
+    </div>
+    <div class="settlement-box">
+      <div class="settlement-title">Situação do mês</div>
+      <div id="situacao" class="settlement-value"><span class="pill">EM ABERTO</span></div>
+    </div>
+  </div>
+  <div class="notice">No fechamento do mês, o pagamento é registrado como uma contrapartida. O saldo daquele mês fica zerado, enquanto o histórico permanece guardado.</div>
+</section>
 </main>
 
 <script>
-const KEY="ab_dp_conta_corrente_v1";
+const KEY="ab_dp_conta_corrente_v2";
 const $=id=>document.getElementById(id);
-$("data").value=new Date().toISOString().slice(0,10);
+const hoje=new Date();
+$("data").value=hoje.toISOString().slice(0,10);
+$("mes").value=hoje.toISOString().slice(0,7);
 
 function getLanc(){return JSON.parse(localStorage.getItem(KEY)||"[]")}
 function save(a){localStorage.setItem(KEY,JSON.stringify(a))}
-
 function dinheiro(n){return Number(n).toLocaleString("pt-BR",{style:"currency",currency:"BRL"})}
+function mesAtual(){return $("mes").value}
+
+function saldoDoMes(mes){
+ let saldo=0;
+ getLanc().forEach(x=>{
+   if(x.data.slice(0,7)!==mes || x.tipo==="pagamento") return;
+   // Pela regra da conta: crédito da AB = positivo para AB e negativo para Dr. Portugal.
+   // Débito da AB = negativo para AB e positivo para Dr. Portugal.
+   saldo += (x.tipo==="credito"?1:-1)*x.valor;
+ });
+ return saldo;
+}
 
 function lancar(){
  const valor=Number($("valor").value);
- if(!valor||valor<=0||!$("descricao").value.trim()){alert("Informe valor e descrição.");return}
+ const descricao=$("descricao").value.trim();
+ if(!valor||valor<=0||!descricao){alert("Informe valor e descrição.");return}
  const a=getLanc();
  a.push({
   id:Date.now(),data:$("data").value,parte:$("parte").value,tipo:$("tipo").value,
-  valor,descricao:$("descricao").value.trim(),documento:$("documento").value.trim(),obs:$("obs").value.trim()
+  valor,descricao,documento:$("documento").value.trim(),obs:$("obs").value.trim()
  });
- save(a); render();
+ save(a);render();
  $("valor").value="";$("descricao").value="";$("documento").value="";$("obs").value="";
 }
-function render(){
+
+function registrarPagamento(){
+ const mes=mesAtual();
+ const saldo=saldoDoMes(mes);
+ if(Math.abs(saldo)<0.005){alert("O mês já está zerado.");return}
+ if(saldo<0){alert("O saldo deste mês não indica valor a receber pela AB Chemicals. Verifique os lançamentos.");return}
+ const valor=Number(saldo.toFixed(2));
+ const ultimoDia=new Date(Number(mes.slice(0,4)),Number(mes.slice(5,7)),0).toISOString().slice(0,10);
  const a=getLanc();
- let ab=0,dp=0;
- a.forEach(x=>{
-  const sinal=x.tipo==="credito"?1:-1;
-  if(x.parte==="AB Chemicals")ab+=sinal*x.valor; else dp+=sinal*x.valor;
+ a.push({
+   id:Date.now(),data:ultimoDia,parte:"Dr. Portugal",tipo:"pagamento",
+   valor,descricao:"Pagamento de fechamento do mês",documento:"FECHAMENTO",
+   obs:"Pagamento registrado para zerar a conta corrente do mês."
  });
- $("saldoAB").textContent=dinheiro(ab);
- $("saldoDP").textContent=dinheiro(dp);
- $("saldoAB").className="value "+(ab>=0?"green":"red");
- $("saldoDP").className="value "+(dp>=0?"green":"red");
- $("qtd").textContent=a.length;
- $("extrato").innerHTML=a.length?a.slice().reverse().map(x=>{
-  const sinal=x.tipo==="credito"?1:-1;
-  const reflexo=x.parte==="AB Chemicals"?"Dr. Portugal":"AB Chemicals";
-  return `<tr><td>${new Date(x.data+"T12:00:00").toLocaleDateString("pt-BR")}</td>
-  <td>${x.parte}</td><td>${x.descricao}</td>
-  <td class="${sinal>0?"green":"red"}">${sinal>0?"+":"-"} ${dinheiro(x.valor)}</td>
-  <td>${reflexo}: ${sinal>0?"-":"+"} ${dinheiro(x.valor)}</td><td>${x.documento||"—"}</td></tr>`
- }).join(""):'<tr><td colspan="6" class="empty">Nenhum lançamento realizado.</td></tr>';
+ save(a);render();
+ alert("Pagamento registrado. O saldo do mês foi zerado e o histórico foi mantido.");
 }
-function limpar(){
- if(confirm("Apagar os lançamentos deste navegador? Esta ação não pode ser desfeita.")){localStorage.removeItem(KEY);render()}
+
+function render(){
+ const mes=mesAtual();
+ const a=getLanc();
+ let ab=0,dp=0,qtd=0;
+ a.forEach(x=>{
+   if(x.data.slice(0,7)!==mes || x.tipo==="pagamento") return;
+   qtd++;
+   const sinal=x.tipo==="credito"?1:-1;
+   if(x.parte==="AB Chemicals") ab+=sinal*x.valor; else dp+=sinal*x.valor;
+ });
+ // O saldo econômico das duas partes é sempre espelhado.
+ const saldoAB=ab;
+ const saldoDP=-ab;
+ $("saldoAB").textContent=dinheiro(saldoAB);
+ $("saldoDP").textContent=dinheiro(saldoDP);
+ $("saldoAB").className="value "+(saldoAB>=0?"green":"red");
+ $("saldoDP").className="value "+(saldoDP>=0?"green":"red");
+ $("qtd").textContent=qtd;
+ $("saldoPagar").textContent=dinheiro(Math.max(0,saldoAB));
+
+ const fechado=a.some(x=>x.data.slice(0,7)===mes && x.tipo==="pagamento");
+ $("situacao").innerHTML=fechado?'<span class="pill">ZERADO / FECHADO</span>':'<span class="pill">EM ABERTO</span>';
+
+ $("extrato").innerHTML=a.filter(x=>x.data.slice(0,7)===mes).slice().reverse().map(x=>{
+   if(x.tipo==="pagamento"){
+     return `<tr><td>${new Date(x.data+"T12:00:00").toLocaleDateString("pt-BR")}</td>
+     <td>${x.parte}</td><td>${x.descricao}</td>
+     <td class="green">+ ${dinheiro(x.valor)}</td>
+     <td>AB Chemicals: - ${dinheiro(x.valor)}</td><td>${x.documento||"—"}</td></tr>`;
+   }
+   const sinal=x.tipo==="credito"?1:-1;
+   const reflexo=x.parte==="AB Chemicals"?"Dr. Portugal":"AB Chemicals";
+   return `<tr><td>${new Date(x.data+"T12:00:00").toLocaleDateString("pt-BR")}</td>
+   <td>${x.parte}</td><td>${x.descricao}</td>
+   <td class="${sinal>0?"green":"red"}">${sinal>0?"+":"-"} ${dinheiro(x.valor)}</td>
+   <td>${reflexo}: ${sinal>0?"-":"+"} ${dinheiro(x.valor)}</td><td>${x.documento||"—"}</td></tr>`
+ }).join("")||'<tr><td colspan="6" class="empty">Nenhum lançamento neste mês.</td></tr>';
 }
+$("mes").addEventListener("change",render);
 render();
 </script>
 </body>
