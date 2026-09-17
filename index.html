@@ -25,7 +25,7 @@ table{width:100%;border-collapse:collapse;font-size:14px}th,td{padding:11px 8px;
 .status{display:inline-block;padding:4px 8px;border-radius:20px;background:#edf7ef;color:var(--green);font-size:11px}
 .empty{text-align:center;color:var(--muted);padding:30px}
 .notice{background:#f8fafc;border:1px solid var(--line);padding:12px;border-radius:9px;font-size:12px;color:var(--muted);margin-top:12px}
- .settlement{margin-top:clamp(10px,2vw,18px);background:#f8fafc;border:1px solid var(--line);border-radius:clamp(10px,1.5vw,14px);padding:clamp(12px,2vw,20px);min-width:0}
+ .settlement{width:100%;margin:clamp(10px,2vw,18px) 0 0;background:#f8fafc;border:1px solid var(--line);border-radius:clamp(10px,1.5vw,14px);padding:clamp(12px,2vw,20px);min-width:0}
 .settlement-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:clamp(8px,1.5vw,14px)}
 .settlement-box{background:#fff;border:1px solid var(--line);border-radius:12px;padding:15px}
 .settlement-title{font-size:13px;color:var(--muted);margin-bottom:7px}.settlement-value{font-size:24px;font-weight:700}
@@ -62,33 +62,6 @@ table{width:100%;border-collapse:collapse;font-size:14px}th,td{padding:11px 8px;
 <div class="card"><div class="label">Contrapartida — Dr. Portugal</div><div id="saldoDP" class="value red">R$ 0,00</div></div>
 <div class="card"><div class="label">Lançamentos do mês</div><div id="qtd" class="value">0</div></div>
 </section>
-
-<section class="panel">
-<h2>Extrato da conta corrente</h2>
-<div class="tablewrap">
-<table><thead><tr><th>Data</th><th>Parte</th><th>Descrição</th><th>Valor</th><th>Reflexo</th><th>Documento</th></tr></thead>
-<tbody id="extrato"></tbody></table>
-</div>
-
-</section>
-
-<section class="panel">
-<h2>Novo lançamento</h2>
-<label>Data</label><input id="data" type="date">
-<label>Quem está lançando?</label>
-<select id="parte"><option>AB Chemicals</option><option>Dr. Portugal</option></select>
-<label>Tipo</label>
-<select id="tipo"><option value="credito">Crédito</option><option value="debito">Débito</option></select>
-<label>Valor (R$)</label><input id="valor" type="number" step="0.01" min="0.01" placeholder="0,00">
-<label>Descrição</label><input id="descricao" placeholder="Ex.: Compra, pagamento, bonificação...">
-<label>Documento / referência</label><input id="documento" placeholder="NF, recibo, referência...">
-<label>Observação</label><textarea id="obs"></textarea>
-<button onclick="lancar()">Registrar lançamento</button>
-<div class="notice">Cada lançamento é registrado uma única vez e o reflexo contrário é calculado automaticamente para a outra parte.</div>
-</section>
-
-</div>
-
 <section class="settlement">
   <div class="monthbar">
     <div>
@@ -111,6 +84,38 @@ table{width:100%;border-collapse:collapse;font-size:14px}th,td{padding:11px 8px;
   </div>
   <div class="notice">No fechamento do mês, o pagamento é registrado como uma contrapartida. O saldo daquele mês fica zerado, enquanto o histórico permanece guardado.</div>
 </section>
+<section class="panel">
+<h2>Novo lançamento</h2>
+<label>Data</label><input id="data" type="date">
+<label>Quem está lançando?</label>
+<select id="parte"><option>AB Chemicals</option><option>Dr. Portugal</option></select>
+<label>Tipo</label>
+<select id="tipo"><option value="credito">Crédito</option><option value="debito">Débito</option></select>
+<label>Valor (R$)</label><input id="valor" type="number" step="0.01" min="0.01" placeholder="0,00">
+<label>Descrição</label><input id="descricao" placeholder="Ex.: Compra, pagamento, bonificação...">
+<label>Documento / referência</label><input id="documento" placeholder="NF, recibo, referência...">
+<label>Observação</label><textarea id="obs"></textarea>
+<button onclick="lancar()">Registrar lançamento</button>
+<div class="notice">Cada lançamento é registrado uma única vez e o reflexo contrário é calculado automaticamente para a outra parte.</div>
+</section>
+<section class="panel">
+<h2>Extrato da conta corrente</h2>
+<div class="tablewrap">
+<table><thead><tr><th>Data</th><th>Parte</th><th>Descrição</th><th>Valor</th><th>Reflexo</th><th>Documento</th></tr></thead>
+<tbody id="extrato"></tbody></table>
+</div>
+
+</section>
+
+
+
+
+
+
+
+</div>
+
+
 </main>
 
 <script>
