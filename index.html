@@ -31,6 +31,9 @@ table{width:100%;border-collapse:collapse;font-size:14px}th,td{padding:11px 8px;
 .bottom-controls .card{width:100%;min-width:0}
 .bottom-controls label{margin-top:0}
 .balance-card{width:100%;min-width:0;padding:clamp(12px,2vw,20px);margin-bottom:clamp(12px,1.5vw,16px)}
+.export-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:clamp(8px,1.5vw,14px)}
+.export-grid>div{min-width:0}
+@media(max-width:600px){.export-grid{grid-template-columns:minmax(0,1fr)}}
 .settlement{width:100%;margin:0;padding:0;background:transparent;border:0;min-width:0}
 .settlement-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:clamp(8px,1.5vw,14px)}
 .settlement-box{background:#fff;border:1px solid var(--line);border-radius:12px;padding:15px}
@@ -176,6 +179,24 @@ select:disabled{opacity:1;color:#20242a;background:#f4f6f8;cursor:not-allowed}
   </div>
 </section>
 
+<section class="panel">
+  <h2>Extrato TXT</h2>
+  <div class="export-grid">
+    <div>
+      <label>Data inicial</label>
+      <input id="extratoDataInicial" type="date">
+    </div>
+    <div>
+      <label>Data final</label>
+      <input id="extratoDataFinal" type="date">
+    </div>
+  </div>
+  <div class="notice">
+    O arquivo será gerado em formato TXT delimitado por ponto e vírgula (;), compatível com importação e leitura no Excel.
+  </div>
+  <button type="button" onclick="exportarExtratoTXT()">Exportar extrato TXT</button>
+</section>
+
 
 
 
@@ -229,6 +250,8 @@ const $ = id => document.getElementById(id);
 const hoje = new Date();
 $("data").value = hoje.toISOString().slice(0,10);
 $("mes").value = hoje.toISOString().slice(0,7);
+$("extratoDataInicial").value = hoje.toISOString().slice(0,8) + "01";
+$("extratoDataFinal").value = hoje.toISOString().slice(0,10);
 
 let auth, db, currentUser = null;
 let lancamentos = [];
@@ -553,6 +576,100 @@ function render(){
 }
 
 $("mes").addEventListener("change",render);
+
+
+function escaparTXT(valor){
+  return String(valor ?? "").replace(/[\r\n]+/g," ").replace(/;/g,",").trim();
+}
+
+function formatarDataTXT(data){
+  if(!data) return "";
+  const partes = data.split("-");
+  return partes.length===3 ? `${partes[2]}/${partes[1]}/${partes[0]}` : data;
+}
+
+function exportarExtratoTXT(){
+  clearAuthError();
+
+  const dataInicial = $("extratoDataInicial").value;
+  const dataFinal = $("extratoDataFinal").value;
+
+  if(!dataInicial || !dataFinal){
+    alert("Informe a data inicial e a data final.");
+    return;
+  }
+
+  if(dataInicial > dataFinal){
+    alert("A data inicial não pode ser maior que a data final.");
+    return;
+  }
+
+  const registros = lancamentos
+    .filter(x => x.data >= dataInicial && x.data <= dataFinal)
+    .sort((a,b) => (a.data || "").localeCompare(b.data || ""));
+
+  if(!registros.length){
+    alert("Não existem lançamentos no período selecionado.");
+    return;
+  }
+
+  const linhas = [];
+  linhas.push([
+    "Data",
+    "Parte",
+    "Tipo",
+    "Descrição",
+    "Valor",
+    "Movimento",
+    "Reflexo",
+    "Usuário que lançou"
+  ].join(";"));
+
+  registros.forEach(x => {
+    const pagamento = x.tipo === "pagamento";
+    const valor = Number(x.valor || 0);
+    let movimento = "";
+    let reflexo = "";
+
+    if(pagamento){
+      movimento = `+ ${valor.toFixed(2).replace(".",",")}`;
+      reflexo = `${x.parte === "AB Chemicals" ? "Dr. Portugal" : "AB Chemicals"}: - ${valor.toFixed(2).replace(".",",")}`;
+    }else{
+      const sinal = x.tipo === "credito" ? 1 : -1;
+      movimento = `${sinal > 0 ? "+" : "-"} ${valor.toFixed(2).replace(".",",")}`;
+      reflexo = `${x.parte === "AB Chemicals" ? "Dr. Portugal" : "AB Chemicals"}: ${sinal > 0 ? "-" : "+"} ${valor.toFixed(2).replace(".",",")}`;
+    }
+
+    const tipoTexto = pagamento ? "Pagamento" : (x.tipo === "credito" ? "Crédito" : "Débito");
+
+    linhas.push([
+      formatarDataTXT(x.data),
+      escaparTXT(x.parte),
+      tipoTexto,
+      escaparTXT(x.descricao),
+      valor.toFixed(2).replace(".",","),
+      movimento,
+      escaparTXT(reflexo),
+      escaparTXT(x.createdByEmail || "")
+    ].join(";"));
+  });
+
+  const conteudo = "\uFEFF" + linhas.join("\r\n");
+  const blob = new Blob([conteudo], {type:"text/plain;charset=utf-8"});
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+
+  const nomeArquivo = `extrato_conta_corrente_${dataInicial}_a_${dataFinal}.txt`;
+  link.href = url;
+  link.download = nomeArquivo;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+
+  alert(`Extrato gerado com ${registros.length} lançamento(s).`);
+}
+window.exportarExtratoTXT = exportarExtratoTXT;
 
 $("loginForm").addEventListener("submit", async e=>{
   e.preventDefault();
